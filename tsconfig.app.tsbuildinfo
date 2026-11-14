@@ -1,1 +1,9 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/components/phasergame.tsx","./src/game/explorationscene.ts"],"version":"5.9.3"}
+{
+    "root": [
+        "./src/app.tsx",
+        "./src/main.tsx",
+        "./src/components/phasergame.tsx",
+        "./src/game/explorationscene.ts"
+    ],
+    "version": "5.9.3"
+}

@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2026-11-14 — Declaraciones Vite para importaciones CSS
+- Movido vite-env.d.ts de la raíz a src/vite-env.d.ts: tsconfig.app.json incluye únicamente src y dejaba fuera la declaración anterior.
+- Conservada la referencia a vite/client, que incluye declaraciones para '*.css'. Importaciones CSS normales y opciones estrictas de TypeScript sin cambios.
+- No se encontraron comentarios @ts-ignore ni @ts-expect-error que retirar. Sin cambios visuales o funcionales.
+- Verificación por revisión de configuración y declaraciones instaladas; no se ejecutó build ni equivalente.
+
 ## 2026-11-14 — Organización de componentes ui/shared
 - Migrados StartScreen, LevelSelectScreen y LevelCard a `src/components/ui/`; PhaserGame y NavigationButton a `src/components/shared/`.
 - Conservados TSX y CSS juntos en la carpeta de cada componente. Actualizadas importaciones de páginas y componentes, sin alterar estilos, lógica, rutas ni ciclo de vida Phaser.
