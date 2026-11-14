@@ -1,0 +1,36 @@
+.not-found-page {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #101526;
+  color: #f4edcf;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.not-found-page h1 {
+  font-size: clamp(26px, 5vw, 40px);
+  text-shadow: 3px 3px #070d1b;
+}
+
+.not-found-page h1:focus {
+  outline: none;
+}
+
+.not-found-page p {
+  color: #bbc7da;
+  line-height: 1.6;
+}
+
+.not-found-page .not-found-code {
+  color: #e9bb71;
+  font-size: 12px;
+  letter-spacing: .2em;
+}
+
+.not-found-page .navigation-button {
+  margin-top: 16px;
+}

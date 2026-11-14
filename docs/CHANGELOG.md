@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-11-14 — Organización de componentes ui/shared
+- Migrados StartScreen, LevelSelectScreen y LevelCard a `src/components/ui/`; PhaserGame y NavigationButton a `src/components/shared/`.
+- Conservados TSX y CSS juntos en la carpeta de cada componente. Actualizadas importaciones de páginas y componentes, sin alterar estilos, lógica, rutas ni ciclo de vida Phaser.
+- Actualizados AGENTS.md, WORK_STATUS.md y README de componentes/motor. Convención obligatoria para futuros cambios, sin crear funcionalidades ni carpetas futuras y sin avance de fase.
+- No se ejecutó build ni equivalente; verificación de compilación pendiente de autorización explícita.
+- Verificados imports sin referencias antiguas en src y respuestas HTTP 200 de componentes, CSS y páginas consumidoras en el servidor de desarrollo existente. Validación visual/interactiva pendiente.
+
+## 2026-11-14 — Refactorización arquitectónica frontend
+- Instalado react-router-dom 7.18.5 y sustituido el estado manual de navegación por BrowserRouter, rutas centralizadas y MainLayout con Outlet.
+- Creadas HomePage, LevelSelectPage, GamePage y NotFoundPage, cada una con carpeta y CSS propios.
+- Migrados StartScreen, LevelSelectScreen, LevelCard y PhaserGame a carpetas individuales conservando sus estilos. Extraído NavigationButton reutilizable a partir de los botones existentes.
+- Movidos niveles a `src/game/levels/`, escenas y registro de escenas a `src/game/scenes/`. Configuración del motor extraída a createGame; ExplorationScene conserva su lógica.
+- GamePage valida levelId antes de montar Phaser: bloqueados redirigen al menú, inexistentes muestran 404. Se mantiene cancelación de montaje pendiente y destrucción del juego al salir o cambiar de nivel.
+- Estilos específicos trasladados desde global.css a componentes/páginas. Corregidas rutas de imágenes para acceso directo y URLs anidadas.
+- Actualizados AGENTS.md y documentación para establecer esta organización como obligatoria. Refactorización sin avance de fase ni cambios de misiones.
+- Verificación por revisión de código, servidor de desarrollo y comprobación del registro real en memoria. Pruebas visuales, historial y ciclo de vida en navegador pendientes. No se ejecutó compilación; requiere autorización explícita.
+
 ## 2026-11-14 — Selección reutilizable de niveles
 - Añadidos registro centralizado de niveles y registro tipado de escenas reales. Tierra enlaza a ExplorationScene; Luna permanece bloqueada sin escena ficticia.
 - Añadidos LevelSelectScreen y LevelCard con estilos propios, imágenes SVG pixel art locales, estados disponible/bloqueado y renderizado dinámico desde el registro.

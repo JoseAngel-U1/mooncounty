@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import Phaser from 'phaser';
-import { sceneRegistry } from '../game/sceneRegistry';
-import type { SceneKey } from '../game/sceneRegistry';
+import type Phaser from 'phaser';
+import { createGame } from '../../../game/createGame';
+import type { SceneKey } from '../../../game/scenes/sceneRegistry';
+import './PhaserGame.css';
 
 type PhaserGameProps = {
   sceneKey: SceneKey;
@@ -17,26 +18,7 @@ export default function PhaserGame({ sceneKey }: PhaserGameProps) {
 
     // StrictMode cancela el primer montaje antes de crear un juego duplicado.
     const frame = requestAnimationFrame(() => {
-      const Scene = sceneRegistry[sceneKey];
-      gameRef.current = new Phaser.Game({
-        type: Phaser.AUTO,
-        parent,
-        // Recibir las teclas antes del preventDefault delegado de React.
-        input: { keyboard: { target: parent } },
-        width: parent.clientWidth,
-        height: parent.clientHeight,
-        backgroundColor: '#183c38',
-        pixelArt: true,
-        roundPixels: true,
-        scale: {
-          mode: Phaser.Scale.RESIZE,
-        },
-        physics: {
-          default: 'arcade',
-          arcade: { gravity: { x: 0, y: 0 }, debug: false },
-        },
-        scene: [new Scene()],
-      });
+      gameRef.current = createGame(parent, sceneKey);
       parent.focus({ preventScroll: true });
     });
 

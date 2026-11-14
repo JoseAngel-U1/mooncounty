@@ -6,4 +6,5 @@ export const sceneRegistry = {
   exploration: ExplorationScene,
 };
 
-export type SceneKey = keyof typeof sceneRegistry;
+export 
+type SceneKey = keyof typeof sceneRegistry;

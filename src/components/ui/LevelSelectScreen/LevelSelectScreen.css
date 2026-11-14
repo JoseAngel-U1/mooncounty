@@ -1,0 +1,51 @@
+.level-select {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #101526;
+  background-image: radial-gradient(#798ba8 1px, transparent 1px), radial-gradient(#aab7cf 1px, transparent 1px);
+  background-size: 97px 83px, 151px 127px;
+  background-position: 13px 29px, 43px 7px;
+  color: #f4edcf;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.level-select-content {
+  width: min(100%, 940px);
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 40px);
+}
+
+.level-select-heading {
+  margin: 32px 0;
+  text-align: center;
+}
+
+.level-select-heading h1 {
+  margin: 12px 0;
+  font-size: clamp(26px, 5vw, 40px);
+  text-shadow: 3px 3px #070d1b;
+}
+
+.level-select-heading h1:focus {
+  outline: none;
+}
+
+.level-select-heading p {
+  color: #bbc7da;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.level-select-heading p:first-child {
+  color: #e9bb71;
+  font-size: 11px;
+  letter-spacing: .2em;
+}
+
+.level-select-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 28px;
+  padding-bottom: 8px;
+}

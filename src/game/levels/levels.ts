@@ -1,4 +1,4 @@
-import type { SceneKey } from '../game/sceneRegistry';
+import type { SceneKey } from '../scenes/sceneRegistry';
 
 type LevelDetails = {
   readonly title: string;
@@ -20,14 +20,14 @@ const levelRegistry: Readonly<Record<string, LevelDefinition>> = {
   earth: {
     title: 'Tierra',
     description: 'Tu punto de partida. Explora el escenario provisional y familiarízate con los controles.',
-    image: 'assets/earth.svg',
+    image: '/assets/earth.svg',
     status: 'available',
     sceneKey: 'exploration',
   },
   moon: {
     title: 'Luna',
     description: 'Un destino por descubrir. Este nivel todavía no está disponible.',
-    image: 'assets/moon.svg',
+    image: '/assets/moon.svg',
     status: 'locked',
     sceneKey: null,
   },
@@ -36,3 +36,7 @@ const levelRegistry: Readonly<Record<string, LevelDefinition>> = {
 export const levels: readonly Level[] = Object.entries(levelRegistry).map(
   ([id, definition]) => ({ id, ...definition }),
 );
+
+export function getLevelById(id: string | undefined): Level | undefined {
+  return levels.find((level) => level.id === id);
+}

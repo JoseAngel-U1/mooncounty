@@ -21,6 +21,10 @@
 | D-17 | No backend ni BD en el MVP inicial | Propuesta técnica aceptada como base de implementación; revisable |
 | D-18 | Portada React a ventana completa con estética espacial pixel art, superficie lunar, astronauta, módulo, cohete y botón INICIAR; se desmonta al entrar al juego existente, sin cargas artificiales ni avance a Fase 2 | Aprobada por el usuario el 2026-11-14 |
 | D-19 | INICIAR abre un selector reutilizable antes del juego. Tierra disponible reutiliza ExplorationScene; Luna es solo una tarjeta bloqueada sin escena/misión. Registro tipado extensible y navegación de regreso juego → menú → inicio, sin persistencia ni desbloqueos automáticos. Amplía el flujo de D-18 | Aprobada por el usuario el 2026-11-14 |
+| D-20 | Refactorización con React Router, páginas y componentes en carpetas propias con CSS, MainLayout con Outlet y rutas centralizadas. Registro de niveles en game/levels, escenas en game/scenes y motor separado de React. Validar levelId antes de iniciar Phaser y conservar apariencia y controles | Aprobada por el usuario el 2026-11-14 |
+
+## Clasificación de componentes — ampliación de D-20
+- **D-21 (2026-11-14, aprobada por el usuario):** separar los componentes existentes en `ui/` (interfaz específica de MoonCounty) y `shared/` (genéricos o compartidos entre páginas y funcionalidades), cada uno con carpeta y TSX/CSS propios. Mantener las responsabilidades de páginas, layouts, router y motor, sin cambios visuales o funcionales ni avance de fase.
 
 ## Por concretar antes de implementarlo
 - Diseño visual y distribución exacta del mapa.

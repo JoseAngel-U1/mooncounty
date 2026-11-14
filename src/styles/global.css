@@ -11,26 +11,3 @@ body {
   color: #f1f6f5;
   font-family: system-ui, -apple-system, Segoe UI, sans-serif;
 }
-.game-canvas {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #183c38;
-}
-.game-canvas:focus-visible { outline: 3px solid #b6f4c9; outline-offset: -3px; }
-.game-canvas canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
-.game-view { position: relative; width: 100%; height: 100%; }
-.navigation-button {
-  min-height: 44px;
-  padding: 10px 14px;
-  border: 2px solid #b7c5d8;
-  border-radius: 0;
-  background: #182338;
-  color: #f4edcf;
-  box-shadow: 3px 3px #070d1b;
-  font: bold 12px 'Courier New', Courier, monospace;
-  cursor: pointer;
-}
-.navigation-button:hover { background: #30425e; }
-.navigation-button:focus-visible { outline: 3px solid #a8eee0; outline-offset: 4px; }
-.game-back { position: absolute; top: 12px; left: 12px; z-index: 1; }

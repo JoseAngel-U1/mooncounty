@@ -28,6 +28,16 @@ Entregar una demostración web funcional de la primera misión durante el hackat
 - [ ] Verificar build de los cambios actuales únicamente con autorización explícita del usuario.
 **Alcance:** interfaz y navegación de Fase 1, sin persistencia, desbloqueos automáticos, inventario ni misiones. No constituye inicio de Fase 2.
 
+#### Refactorización arquitectónica autorizada — React Router
+- [x] Instalar react-router-dom y sustituir navegación manual por rutas `/`, `/levels`, `/game/:levelId` y `*`.
+- [x] Organizar HomePage, LevelSelectPage, GamePage y NotFoundPage con carpeta y CSS propios; MainLayout usa Outlet.
+- [x] Migrar componentes a carpetas individuales y extraer estilos específicos de global.css sin rediseñar la interfaz.
+- [x] Mover niveles a `src/game/levels/`, escenas a `src/game/scenes/` y creación del motor a `src/game/createGame.ts`.
+- [x] Resolver IDs desde URL antes de montar Phaser; bloquear entrada lunar y mostrar 404 para IDs inexistentes.
+- [x] Establecer organización obligatoria en AGENTS.md.
+- [ ] Verificar visualmente rutas directas, recargas, Atrás/Adelante y desmontaje repetido en navegador.
+**Estado:** refactorización de Fase 1, sin nuevas misiones ni avance de fase. Build pendiente de autorización explícita.
+
 ### Fase 2 — Mapa y colisiones
 - [ ] Definir mapa pequeño con áreas funcionales.
 - [ ] Añadir paredes/obstáculos y colisiones.

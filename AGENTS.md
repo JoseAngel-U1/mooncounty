@@ -13,9 +13,22 @@ Si hay conflicto, detenerse y preguntar antes de modificar una decisión confirm
 
 ## Stack
 - Vite + React + TypeScript para interfaz, inventario y modales.
+- React Router (`react-router-dom`) para rutas y navegación frontend.
 - Phaser 3 para mapa, personaje, movimiento, colisiones e interacciones.
 - CSS sin librerías visuales obligatorias.
 - Estado en memoria; sin backend, autenticación ni base de datos para MVP.
+
+## Organización frontend obligatoria
+- Cada página debe vivir en `src/pages/NombrePage/NombrePage.tsx` con su propio `NombrePage.css` en la misma carpeta.
+- Separar obligatoriamente `src/components/` en `ui/` y `shared/`: `ui/` contiene los componentes visuales específicos de MoonCounty (actualmente StartScreen, LevelSelectScreen y LevelCard); `shared/` contiene componentes genéricos o reutilizables entre páginas y funcionalidades (actualmente PhaserGame y NavigationButton).
+- Cada componente debe vivir en `src/components/ui/NombreComponente/` o `src/components/shared/NombreComponente/`, con sus propios archivos `NombreComponente.tsx` y `NombreComponente.css` juntos. No agrupar estilos de componentes en una carpeta general.
+- Migrar componentes existentes sin duplicar implementación y actualizar sus importaciones. No crear componentes ficticios ni carpetas vacías para funcionalidades futuras; inventarios o modales específicos pertenecerán a `ui/` únicamente cuando se autorice su implementación.
+- Los layouts viven en `src/layouts/NombreLayout/` con archivos TSX y CSS propios. `MainLayout` debe componer las páginas mediante `Outlet` de React Router.
+- Centralizar rutas en `src/router/AppRouter.tsx`: `/`, `/levels`, `/game/:levelId` y `*`. Usar `Link`, `useNavigate` o `Navigate` para navegar; no duplicar la ruta activa en estado manual de React.
+- Mantener el registro tipado de niveles en `src/game/levels/` y las escenas Phaser en `src/game/scenes/`. Resolver y validar `levelId` desde la URL antes de montar Phaser: un nivel inexistente o bloqueado nunca inicia el motor.
+- Mantener la configuración y lógica del motor en `src/game/`, separadas de React. El componente PhaserGame solo integra el contenedor, foco y ciclo de vida; debe cancelar creaciones pendientes y destruir el juego al salir o cambiar de nivel, sin instancias duplicadas en StrictMode.
+- Reservar `src/styles/global.css` para reset, variables y estilos realmente globales. Los estilos específicos pertenecen al CSS de su página, componente o layout.
+- Las refactorizaciones arquitectónicas deben conservar apariencia, controles y reglas del juego; no implican avance de fase ni autorización para compilar.
 
 ## Reglas de implementación
 - Desarrollar una fase a la vez, en cambios pequeños y verificables.
