@@ -4,6 +4,7 @@ export type EarthMissionState = {
   hasCoordinates: boolean;
   hasTrajectoryData: boolean;
   launchCode: string | null;
+  missionCompleted: boolean;
 };
 
 export function createEarthMissionState(): EarthMissionState {
@@ -13,5 +14,6 @@ export function createEarthMissionState(): EarthMissionState {
     hasCoordinates: false,
     hasTrajectoryData: false,
     launchCode: null,
+    missionCompleted: false,
   };
 }

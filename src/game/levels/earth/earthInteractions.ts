@@ -12,9 +12,24 @@ export const EARTH_COORDINATES_POSITION = {
   x: EARTH_COORDINATES_RECT.x + EARTH_COORDINATES_RECT.width / 2,
   y: EARTH_COORDINATES_RECT.y + EARTH_COORDINATES_RECT.height / 2,
 } as const;
+export const EARTH_SHIP_INTERACTION_RECT = { x: 1274, y: 39, width: 70, height: 137 } as const;
+export const EARTH_SHIP_INTERACTION_POSITION = {
+  x: EARTH_SHIP_INTERACTION_RECT.x + EARTH_SHIP_INTERACTION_RECT.width / 2,
+  y: EARTH_SHIP_INTERACTION_RECT.y + EARTH_SHIP_INTERACTION_RECT.height / 2,
+} as const;
+export const EARTH_SHIP_INTERACTION_RADIUS = Math.hypot(
+  EARTH_SHIP_INTERACTION_RECT.width,
+  EARTH_SHIP_INTERACTION_RECT.height,
+) / 2;
+
+export type EarthLaunchPanelOpenOptions = {
+  completed: boolean;
+  onCompleted: () => void;
+};
 
 export type EarthInteractionHandlers = {
   onSpacesuitEquipped?: () => void;
+  onOpenLaunchPanel?: (options: EarthLaunchPanelOpenOptions) => boolean;
 };
 
 export function createEarthInteractions(
@@ -139,6 +154,30 @@ export function createEarthInteractions(
 
         missionState.hasCoordinates = true;
         showMessage('Coordenadas de lanzamiento obtenidas. Entrégalas al ingeniero');
+      },
+    },
+    {
+      id: 'nave',
+      x: EARTH_SHIP_INTERACTION_POSITION.x,
+      y: EARTH_SHIP_INTERACTION_POSITION.y,
+      radius: EARTH_SHIP_INTERACTION_RADIUS,
+      prompt: 'Presiona E para acceder al panel de lanzamiento',
+      action: ({ showMessage }) => {
+        if (!missionState.missionCompleted && missionState.launchCode === null) {
+          showMessage('Nave: Necesitas autorización del coordinador para acceder al panel de lanzamiento.');
+          return;
+        }
+
+        const opened = handlers.onOpenLaunchPanel?.({
+          completed: missionState.missionCompleted,
+          onCompleted: () => {
+            missionState.missionCompleted = true;
+          },
+        }) ?? false;
+
+        if (!opened) {
+          showMessage('El panel de lanzamiento no está disponible en este momento.');
+        }
       },
     },
   ];

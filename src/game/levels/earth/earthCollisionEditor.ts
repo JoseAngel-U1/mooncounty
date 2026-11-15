@@ -26,6 +26,12 @@ type DragState = {
   height: number;
 };
 
+type PanelDragState = {
+  pointerId: number;
+  offsetX: number;
+  offsetY: number;
+};
+
 const HANDLE_CURSORS: Record<ResizeHandle, string> = {
   nw: 'nwse-resize',
   n: 'ns-resize',
@@ -54,6 +60,7 @@ export class EarthCollisionEditor {
   private deleteKey?: Phaser.Input.Keyboard.Key;
   private renameKey?: Phaser.Input.Keyboard.Key;
   private panel?: HTMLDivElement;
+  private panelDrag?: PanelDragState;
   private nameEl?: HTMLElement;
   private coordsEl?: HTMLElement;
   private statusEl?: HTMLElement;
@@ -64,6 +71,55 @@ export class EarthCollisionEditor {
     if (!this.enabled || !this.dragState) return;
     this.finishDrag();
     this.setCursor('');
+  };
+
+  private readonly handlePanelDragStart = (event: PointerEvent) => {
+    if (!this.enabled || event.button !== 0 || !this.panel) return;
+    const header = event.currentTarget;
+    if (!(header instanceof HTMLElement)) return;
+
+    const container = this.getPanelContainer();
+    if (!container) return;
+
+    const panelRect = this.panel.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    this.panel.style.left = `${panelRect.left - containerRect.left}px`;
+    this.panel.style.top = `${panelRect.top - containerRect.top}px`;
+    this.panel.style.right = 'auto';
+    this.panelDrag = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - panelRect.left,
+      offsetY: event.clientY - panelRect.top,
+    };
+
+    header.setPointerCapture(event.pointerId);
+    header.style.cursor = 'grabbing';
+    window.addEventListener('pointermove', this.handlePanelDragMove);
+    window.addEventListener('pointerup', this.handlePanelDragEnd);
+    window.addEventListener('pointercancel', this.handlePanelDragEnd);
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
+  private readonly handlePanelDragMove = (event: PointerEvent) => {
+    if (!this.panelDrag || event.pointerId !== this.panelDrag.pointerId || !this.panel) return;
+    const container = this.getPanelContainer();
+    if (!container) return;
+
+    const containerRect = container.getBoundingClientRect();
+    this.setPanelPosition(
+      event.clientX - this.panelDrag.offsetX - containerRect.left,
+      event.clientY - this.panelDrag.offsetY - containerRect.top,
+    );
+  };
+
+  private readonly handlePanelDragEnd = (event: PointerEvent) => {
+    if (!this.panelDrag || event.pointerId !== this.panelDrag.pointerId) return;
+    this.finishPanelDrag();
+  };
+
+  private readonly handleWindowResize = () => {
+    this.clampPanelToContainer();
   };
 
   private readonly handlePanelClick = (event: MouseEvent) => {
@@ -185,6 +241,8 @@ export class EarthCollisionEditor {
       this.scene.input.off('pointerupoutside', this.handlePointerUp, this);
       this.scene.input.off('gameout', this.handleGameOut, this);
       window.removeEventListener('pointerup', this.handleWindowPointerUp);
+      window.removeEventListener('resize', this.handleWindowResize);
+      this.finishPanelDrag();
       this.panel?.remove();
       this.panel = undefined;
       this.scene.input.keyboard?.removeCapture(Phaser.Input.Keyboard.KeyCodes.F3);
@@ -202,7 +260,7 @@ export class EarthCollisionEditor {
     panel.setAttribute('data-earth-collision-editor', '');
     panel.style.display = 'none';
     panel.innerHTML = `
-      <div class="ee-title">Editor de colisiones <span>F3</span></div>
+      <div class="ee-title" title="Arrastrar para mover el panel">Editor de colisiones <span>F3</span></div>
       <div class="ee-row"><span class="ee-label">Nombre</span><span data-field="name">Sin selección</span></div>
       <pre data-field="coords" class="ee-coords">x: —  y: —\nwidth: —  height: —</pre>
       <div class="ee-actions">
@@ -243,6 +301,8 @@ export class EarthCollisionEditor {
         border-bottom: 1px solid rgba(255, 255, 255, 0.12);
         font-weight: 700;
         letter-spacing: 0.02em;
+        cursor: grab;
+        touch-action: none;
       }
       [data-earth-collision-editor] .ee-title span {
         color: #ffd166;
@@ -316,7 +376,56 @@ export class EarthCollisionEditor {
     this.renameButton = panel.querySelector<HTMLButtonElement>('button[data-action="rename"]') ?? undefined;
 
     panel.addEventListener('click', this.handlePanelClick);
+    panel.querySelector<HTMLElement>('.ee-title')?.addEventListener('pointerdown', this.handlePanelDragStart);
+    window.addEventListener('resize', this.handleWindowResize);
     this.updatePanel();
+  }
+
+  private getPanelContainer(): HTMLElement | null {
+    const panel = this.panel;
+    if (!panel) return null;
+    if (panel.offsetParent instanceof HTMLElement) return panel.offsetParent;
+    return panel.parentElement;
+  }
+
+  private setPanelPosition(left: number, top: number) {
+    const panel = this.panel;
+    const container = this.getPanelContainer();
+    if (!panel || !container) return;
+
+    const maxLeft = Math.max(0, container.clientWidth - panel.offsetWidth);
+    const maxTop = Math.max(0, container.clientHeight - panel.offsetHeight);
+    panel.style.left = `${Phaser.Math.Clamp(left, 0, maxLeft)}px`;
+    panel.style.top = `${Phaser.Math.Clamp(top, 0, maxTop)}px`;
+  }
+
+  private clampPanelToContainer() {
+    const panel = this.panel;
+    if (!panel || panel.style.display === 'none') return;
+
+    const left = Number.parseFloat(panel.style.left);
+    const top = Number.parseFloat(panel.style.top);
+    if (!Number.isFinite(left) || !Number.isFinite(top)) return;
+    this.setPanelPosition(left, top);
+  }
+
+  private finishPanelDrag() {
+    const header = this.panel?.querySelector<HTMLElement>('.ee-title') ?? null;
+    const pointerId = this.panelDrag?.pointerId;
+    if (header && pointerId !== undefined) {
+      try {
+        if (header.hasPointerCapture(pointerId)) header.releasePointerCapture(pointerId);
+      } catch {
+        // El puntero ya no está activo.
+      }
+      header.style.cursor = '';
+    }
+
+    this.panelDrag = undefined;
+    window.removeEventListener('pointermove', this.handlePanelDragMove);
+    window.removeEventListener('pointerup', this.handlePanelDragEnd);
+    window.removeEventListener('pointercancel', this.handlePanelDragEnd);
+    this.scene.game.canvas.parentElement?.focus({ preventScroll: true });
   }
 
   private setEnabled(enabled: boolean) {
@@ -329,9 +438,11 @@ export class EarthCollisionEditor {
     if (!enabled) {
       this.selectedItem = null;
       this.dragState = null;
+      this.finishPanelDrag();
       this.setCursor('');
     } else {
       this.player.setVelocity(0, 0);
+      this.clampPanelToContainer();
       this.draw();
     }
 

@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 2026-11-15 — Interacción final con la nave y panel de lanzamiento (D-35)
+- Añadida la interacción `nave` en `earthInteractions.ts` sobre la zona `(1274, 39, 70, 137)`, centro `(1309, 107.5)` y radio circunscrito ≈ 76,9 px del sistema de proximidad; sin nueva colisión. Aviso «Presiona E para acceder al panel de lanzamiento»; sin `launchCode` muestra autorización pendiente y no abre nada.
+- Nuevo puente sin Phaser `earthLaunchPanelBridge.ts` y componente `LaunchPanel` en `src/components/ui/` con overlay semitransparente, campo de exactamente 4 dígitos, botón «Autorizar lanzamiento», errores y reintentos, cierre por botón/×/Escape y mensaje «¡Misión Tierra completada!» sin animación.
+- `earthMissionState.ts` añade `missionCompleted`; `earthMissionConfig.ts` expone `EARTH_LAUNCH_CODE_LENGTH` e `isEarthLaunchCode()` para no duplicar `4826`. `EarthScene` bloquea movimiento e interacciones mientras el modal está abierto y restaura control, teclas y foco al cerrar; F3 sigue independiente.
+- Sin cambios en mapa, colisiones (31 intactas), NPC, elevador, animaciones ni resto del flujo. El límite de intentos, el combustible, los modales de fallo y el «Continuar» definitivo siguen pendientes.
+- Verificación con Edge headless + CDP: aviso y autorización sin código, apertura con código, foco/trampa de teclado, bloqueo y restauración del movimiento, validación de longitud/dígitos, error y reintento, cierre sin pérdida de progreso, mensaje final y reapertura, F3 intacto y sin errores de consola. Comprobación de tipos y build pendientes de autorización.
+
+## 2026-11-15 — Panel del editor F3 arrastrable (D-34)
+- El panel flotante del editor de colisiones de Tierra se arrastra desde `.ee-title` con captura de puntero; al soltar, `left`/`top` quedan fijados y la posición se conserva al cerrar y reabrir F3 dentro de la escena.
+- La posición se acota al contenedor del juego y se recalcula al redimensionar la ventana o reabrir el editor, sin cambios en el diseño del panel.
+- Sin cambios en coordenadas, colisiones, interacciones, movimiento ni misiones; sigue siendo exclusivo de desarrollo.
+- Verificación con Edge headless + CDP: movimiento, límites, persistencia, arrastre desde el cuerpo inerte, 31 colisiones iguales al módulo y sin errores de consola. Comprobación de tipos y build pendientes de autorización.
+
+## 2026-11-15 — Sprites propios de ingeniero y coordinador (D-33)
+- Añadido `src/game/levels/earth/earthNpcSprites.ts`: carga `NPC_Staff_v1` (ingeniero) y `NPC_Staff_v2` (coordinador), frames 32–39, y registra un Idle a 8 fps en bucle con texturas individuales.
+- `EarthScene` usa estos sprites, elimina los tintes provisionales `0x6699ff` y `0xffcf66`, y conserva posiciones `(164, 108)`/`(930, 850)`, escala 2×, etiquetas y el respaldo al sprite del jugador si faltan texturas.
+- Sin cambios en diálogos, interacciones, estados de misión, colisiones, elevador ni sprites/animaciones del jugador; sin recursos nuevos.
+- Verificación: análisis de frames (parpadeo 36–38, siluetas v1/v2 idénticas) y prueba Node de carga, claves, 8 frames por NPC, bucle e idempotencia; 16 PNG accesibles por HTTP y Vite transforma los módulos. En ejecución (Edge headless + CDP) ambos NPC muestran su textura, sin tinte, escala 2×, posiciones y etiquetas intactas, Idle 32–39 en bucle y jugador sin cambios; sin errores de consola. Comprobación de tipos y build pendientes de autorización.
+
 ## 2026-11-15 — Elevador vertical exclusivo en Tierra (sustituye D-31)
 - Reescrito `src/game/levels/earth/earthElevator.ts` para traslado solo vertical: X constante y extremos confirmados Y=415 (superior) e Y=690 (inferior).
 - Zonas de activación confirmadas: `(1247, 395, 148, 40)` y `(1247, 675, 148, 40)`. Activación automática sin E al estar en la zona y dentro de la columna de 22 px centrada en X=1321 (1310–1332); no se ajusta X automáticamente, por lo que entrar en la zona fuera de la columna no activa.

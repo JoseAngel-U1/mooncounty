@@ -54,11 +54,11 @@ Entregar una demostración web funcional de la primera misión durante el hackat
 **Criterio:** completar secuencia de búsqueda e ingeniero.
 
 ### Fase 4 — Nave, validaciones y consecuencias
-- [ ] Panel de nave para introducir código y solicitar despegue.
+- [x] Interacción final con la nave y panel de lanzamiento (D-35): zona `(1274, 39, 70, 137)` sin nueva colisión, aviso E, autorización pendiente sin código, modal React de 4 dígitos validado con `isEarthLaunchCode()`, reintentos, cierre sin pérdida de progreso y «¡Misión Tierra completada!» sin animación. Prueba visual pendiente.
 - [ ] Contador de 3 errores y bloqueo definitivo.
 - [ ] Fallo por intento sin combustible.
 - [ ] Modal de fallo con checklist y reinicio completo.
-- [ ] Modal de éxito con «Continuar» provisional.
+- [ ] Modal de éxito definitivo con «Continuar» provisional.
 **Criterio:** todos los casos de `MISSION_01.md` pasan.
 
 ### Fase 5 — Calidad y entrega

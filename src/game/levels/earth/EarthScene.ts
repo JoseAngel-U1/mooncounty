@@ -5,8 +5,20 @@ import { EarthCollisionEditor } from './earthCollisionEditor';
 import { EARTH_COLLISION_RECTS } from './earthCollisions';
 import { EarthElevator } from './earthElevator';
 import { ProximityInteractionSystem } from '../../interactions/ProximityInteractionSystem';
-import { createEarthInteractions, EARTH_COORDINATOR_POSITION, EARTH_ENGINEER_POSITION } from './earthInteractions';
+import {
+  createEarthInteractions,
+  EARTH_COORDINATOR_POSITION,
+  EARTH_ENGINEER_POSITION,
+} from './earthInteractions';
+import type { EarthLaunchPanelOpenOptions } from './earthInteractions';
+import { requestEarthLaunchPanel } from './earthLaunchPanelBridge';
 import { createEarthMissionState } from './earthMissionState';
+import {
+  createEarthNpcIdleAnimations,
+  getEarthNpcTextureKey,
+  loadEarthNpcTextures,
+} from './earthNpcSprites';
+import type { EarthNpcAnimationKeys } from './earthNpcSprites';
 import {
   createEarthPlayerAnimations,
   EARTH_ASTRONAUT_SCALE,
@@ -17,7 +29,6 @@ import type { EarthPlayerAnimationKeys } from './earthPlayerSprites';
 
 const MAP_KEY = 'earth-map';
 const MAP_PATH = '/assets/levels/earth/map.png';
-const NPC_TINT = 0xffcf66;
 
 // Spam del Astronauta
 const EARTH_PLAYER_SPAWN: Readonly<PlayerSpawn> = {
@@ -33,7 +44,9 @@ export class EarthScene extends ExplorationScene {
   private elevator?: EarthElevator;
   private missionState = createEarthMissionState();
   private playerAnimations?: EarthPlayerAnimationKeys;
+  private npcAnimations?: EarthNpcAnimationKeys;
   private facingLeft = false;
+  private launchPanelOpen = false;
 
   constructor() {
     super('earth');
@@ -42,18 +55,22 @@ export class EarthScene extends ExplorationScene {
   preload() {
     this.load.image(MAP_KEY, MAP_PATH);
     loadEarthPlayerTextures(this);
+    loadEarthNpcTextures(this);
   }
 
   create() {
     this.missionState = createEarthMissionState();
     this.playerAnimations = undefined;
+    this.npcAnimations = undefined;
     this.facingLeft = false;
+    this.launchPanelOpen = false;
 
     if (this.textures.exists(MAP_KEY)) {
       this.mapImage = this.add.image(0, 0, MAP_KEY).setOrigin(0, 0).setScale(1);
     }
     super.create();
     this.setupPlayerAnimations(this.missionState.hasSpacesuit);
+    this.npcAnimations = createEarthNpcIdleAnimations(this);
     this.createCoordinator();
     this.createEngineer();
 
@@ -64,6 +81,7 @@ export class EarthScene extends ExplorationScene {
       this.player,
       createEarthInteractions(this.missionState, {
         onSpacesuitEquipped: () => this.equipSpacesuit(),
+        onOpenLaunchPanel: (options) => this.openLaunchPanel(options),
       }),
       16 * (EARTH_ASTRONAUT_SCALE - 1),
     );
@@ -77,6 +95,13 @@ export class EarthScene extends ExplorationScene {
 
   override update() {
     this.collisionEditor?.update();
+
+    if (this.launchPanelOpen) {
+      this.player.setVelocity(0, 0);
+      this.updatePlayerAnimation(0, 0);
+      return;
+    }
+
     const riding = this.elevator?.update(!this.collisionEditor?.isEditing()) ?? false;
     this.interactions?.update(!this.collisionEditor?.isEditing() && !riding);
 
@@ -91,14 +116,41 @@ export class EarthScene extends ExplorationScene {
     super.update();
   }
 
-  private createCoordinator() {
-    const helmetTextureKey = getEarthPlayerTextureKey(true);
-    const textureKey = this.textures.exists(helmetTextureKey) ? helmetTextureKey : this.player.texture.key;
+  private openLaunchPanel(options: EarthLaunchPanelOpenOptions): boolean {
+    if (this.launchPanelOpen) return false;
 
-    this.add.sprite(EARTH_COORDINATOR_POSITION.x, EARTH_COORDINATOR_POSITION.y, textureKey)
+    this.launchPanelOpen = true;
+    this.player.setVelocity(0, 0);
+    this.updatePlayerAnimation(0, 0);
+
+    const opened = requestEarthLaunchPanel({
+      completed: options.completed,
+      onCompleted: () => {
+        options.onCompleted();
+        this.updatePlayerAnimation(0, 0);
+      },
+      onClose: () => {
+        this.launchPanelOpen = false;
+        this.input.keyboard?.resetKeys();
+        this.game.canvas.parentElement?.focus({ preventScroll: true });
+      },
+    });
+
+    if (!opened) this.launchPanelOpen = false;
+    return opened;
+  }
+
+  private createCoordinator() {
+    const idleTextureKey = getEarthNpcTextureKey('coordinator');
+    const hasNpcTexture = this.textures.exists(idleTextureKey);
+    const textureKey = hasNpcTexture ? idleTextureKey : this.player.texture.key;
+    const idle = this.npcAnimations?.coordinator;
+
+    const coordinator = this.add.sprite(EARTH_COORDINATOR_POSITION.x, EARTH_COORDINATOR_POSITION.y, textureKey)
       .setScale(EARTH_ASTRONAUT_SCALE)
-      .setTint(NPC_TINT)
       .setDepth(1);
+    if (hasNpcTexture && idle) coordinator.play(idle);
+
     this.add.text(EARTH_COORDINATOR_POSITION.x, EARTH_COORDINATOR_POSITION.y - (16 * EARTH_ASTRONAUT_SCALE + 10), 'Coordinador', {
       fontFamily: 'sans-serif',
       fontSize: '12px',
@@ -109,13 +161,16 @@ export class EarthScene extends ExplorationScene {
   }
 
   private createEngineer() {
-    const textureKey = getEarthPlayerTextureKey(false);
+    const idleTextureKey = getEarthNpcTextureKey('engineer');
+    const hasNpcTexture = this.textures.exists(idleTextureKey);
+    const textureKey = hasNpcTexture ? idleTextureKey : this.player.texture.key;
+    const idle = this.npcAnimations?.engineer;
+
     const engineer = this.add.sprite(EARTH_ENGINEER_POSITION.x, EARTH_ENGINEER_POSITION.y, textureKey)
       .setScale(EARTH_ASTRONAUT_SCALE)
-      .setTint(0x6699ff)
       .setDepth(1);
-    const animations = createEarthPlayerAnimations(this, false);
-    engineer.play(animations.idle);
+    if (hasNpcTexture && idle) engineer.play(idle);
+
     this.add.text(EARTH_ENGINEER_POSITION.x, EARTH_ENGINEER_POSITION.y - (16 * EARTH_ASTRONAUT_SCALE + 10), 'Ingeniero', {
       fontFamily: 'sans-serif',
       fontSize: '12px',
