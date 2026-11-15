@@ -1,9 +1,24 @@
-# MoonCounty
+<div align="center">
 
-MVP educativo para un hackatón NASA: un astronauta explora un mapa 2D, reúne documentos y combustible, obtiene un código y toma decisiones para preparar el despegue desde la Tierra. Las decisiones erróneas tienen consecuencias y reinician la misión.
+   # 🚀 MoonCounty
+   ### *Junior Astronaut Mission Trainer*
 
-## Tecnologías
-React + TypeScript + Vite + Phaser 3.90.0.
+   Un videojuego web educativo en 2D con vista cenital desarrollado para el **NASA Space Apps Challenge**. Entrena a futuros astronautas en los rigurosos procedimientos de verificación, trabajo en equipo y toma de decisiones críticas necesarias para preparar un lanzamiento espacial.
+
+[![Estado del Proyecto](https://img.shields.io/badge/Estado-MVP_en_Desarrollo-orange?style=for-the-badge)](#-estado-del-desarrollo)
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Phaser 3](https://img.shields.io/badge/Phaser_3-3.90.0-e84118?style=for-the-badge&logo=phaser&logoColor=white)](https://phaser.io/)
+
+---
+
+### 🎮 **¡Pruébalo en vivo ahora mismo!**
+👉 **[https://mooncounty.vercel.app/](https://mooncounty.vercel.app/)** 👈
+
+---
+
+</div>
 
 ## Requisitos
 Node.js LTS y npm, Git y opcionalmente OpenCode.
