@@ -1,7 +1,7 @@
 # WORK_STATUS — MoonCounty
 
 **Última actualización:** 2026-11-14
-**Estado:** escena independiente de Tierra preparada sobre la base reutilizable de Fase 1, sin nuevas mecánicas. Validación visual pendiente y build de los cambios actuales pendiente de autorización explícita.
+**Estado:** EarthScene carga el mapa pixel art de Tierra, ajusta mundo/cámara a sus dimensiones y aplica zoom uniforme de cobertura cuando el viewport es mayor que el mapa, sin franjas vacías. Cuadrícula provisional como respaldo. Sin colisiones, NPC, misiones ni inventario. Build de los cambios actuales pendiente de autorización explícita.
 **Fase activa:** Fase 1 — Integración Phaser. No avanzar a Fase 2 sin autorización.
 
 ## Completado
@@ -12,7 +12,9 @@
 - LevelSelectScreen genera las tarjetas LevelCard desde `src/game/levels/registry.ts`. Tierra disponible con clave `earth`; Luna bloqueada con `sceneKey: null`, sin implementación lunar. Imágenes SVG con rutas absolutas para funcionar en URLs anidadas.
 - GamePage resuelve levelId desde la URL: Tierra monta Phaser, Luna redirige a `/levels` con replace e IDs desconocidos muestran NotFoundPage. Los dos últimos casos no crean Phaser.
 - `src/game/scenes/sceneRegistry.ts` relaciona claves con constructores reales; `src/game/createGame.ts` conserva la configuración del motor. PhaserGame solo gestiona contenedor, foco y ciclo de vida.
-- Organización por nivel: ExplorationScene queda como escena base reutilizable en `src/game/scenes/` y recibe la clave de escena; `src/game/levels/earth/EarthScene.ts` la extiende con la clave `earth`, conservando escenario provisional, WASD/flechas, cámara y límites. `src/game/levels/registry.ts` centraliza los niveles. Sin NPC, misiones, objetos, colisiones ni mapa definitivo.
+- Organización por nivel: ExplorationScene queda como escena base reutilizable en `src/game/scenes/` y recibe la clave de escena; `src/game/levels/earth/EarthScene.ts` la extiende con la clave `earth`, conservando WASD/flechas, cámara y límites. `src/game/levels/registry.ts` centraliza los niveles.
+- Fondo pixel art de Tierra: EarthScene carga `/assets/levels/earth/map.png` en preload y lo dibuja a escala 1:1 sin deformación. El mundo físico y los límites de cámara adoptan las dimensiones reales del PNG (1451 × 1084); el astronauta mantiene el seguimiento de cámara. Si el PNG no existe o no carga, se conserva la cuadrícula provisional y el mundo del tamaño del canvas. ExplorationScene expone `getWorldSize`, `getCameraZoom` y `renderBackground` como puntos de extensión.
+- Cobertura del viewport: cuando el ancho o alto visible supera al mapa, EarthScene aplica un zoom uniforme `max(1, viewport/mapa)` que agranda el mundo sin deformarlo ni recortar proporciones, de modo que la cámara nunca muestra área fuera del PNG. Con viewport menor que el mapa se conserva el zoom 1 y el desplazamiento de cámara. Sin colisiones, NPC, misiones ni inventario.
 - Estilos originales de portada, menú y tarjetas conservados. Estilos de canvas y botones extraídos de global.css a sus componentes; estilos del contenedor del juego en GamePage.css. Global.css contiene únicamente reset y estilos globales.
 - El contenedor del juego recibe foco automáticamente. El menú enfoca su encabezado al entrar y admite navegación por teclado; las tarjetas bloqueadas tienen botón deshabilitado.
 - Requisitos acordados de la misión 1 documentados.
@@ -32,11 +34,12 @@
 1. Validar manualmente Fase 1 con `npm run dev`: foco con clic/Tab, WASD/flechas y cuatro bordes. Maximizar, restaurar y redimensionar, también con el astronauta junto al borde inferior/derecho: comprobar ausencia de franjas y personaje completamente visible. La cámara conserva el seguimiento, pero no necesita desplazarse cuando mundo y viewport coinciden.
 2. Comprobar que al cambiar de foco no queda movimiento atascado y que StrictMode muestra un único canvas.
 3. Comprobar desmontaje/remontaje: desaparece el canvas anterior y se crea una única instancia nueva.
-4. Crear repositorio remoto y primer commit (pendiente administrativo de Fase 0; no ejecutado).
-5. Esperar autorización expresa antes de iniciar Fase 2.
+4. Validar el mapa de Tierra: al entrar en `/game/earth` debe verse el PNG sin deformación, con scroll de cámara al desplazarse si el mapa excede el viewport y sin atravesar los bordes del PNG. Renombrar temporalmente `public/assets/levels/earth/map.png` debe mostrar la cuadrícula provisional sin impedir el movimiento.
+5. Crear repositorio remoto y primer commit (pendiente administrativo de Fase 0; no ejecutado).
+6. Esperar autorización expresa antes de iniciar Fase 2.
 
 ## Próxima instrucción para OpenCode
-Validar la Fase 1 implementada. La Fase 2 requiere autorización del usuario; no implementar aún mapa con obstáculos ni objetos de misión.
+Validar manualmente la escena y el mapa de Tierra. La Fase 2 requiere autorización del usuario; no implementar aún obstáculos, colisiones ni objetos de misión.
 
 ## Extensión del registro de niveles
 - Agregar metadatos en `src/game/levels/registry.ts`; la clave del registro se convierte en ID único y React genera la tarjeta automáticamente. GamePage usa getLevelById para resolver la URL.
@@ -50,6 +53,8 @@ Validar la Fase 1 implementada. La Fase 2 requiere autorización del usuario; no
 - La misión 2 no está definida; no inventar su contenido.
 
 ## Registro de verificación
+- Cobertura del mapa (2026-11-14): causa identificada: con viewport más ancho que el PNG (1451 px), `zoom = 1` y `setBounds` dejaban 466 px sin mundo a 1920 de ancho, mostrando el fondo del juego. Añadido `getCameraZoom` en la escena base (1 por defecto) y sobrescrito en EarthScene con `max(1, anchoViewport/anchoMapa, altoViewport/altoMapa)`. Capturas headless del servidor de desarrollo a 1920×1080, 1600×900 y 1280×720: sin píxeles de fondo a la altura central; el mapa cubre todo el ancho. Sin ejecutar build, tsc ni equivalente.
+- Mapa de Tierra (2026-11-14): revisado que `public/assets/levels/earth/map.png` existe y mide 1451 × 1084. EarthScene lo carga en preload, lo dibuja con origen 0,0 y escala 1, y deriva de la textura los límites del mundo y de la cámara; el respaldo con cuadrícula se activa si la textura no existe. Revisión estática de tipos e imports. Comprobación en el servidor de desarrollo existente: HTTP 200 del PNG y de los módulos de escena. No se ejecutó build, tsc ni equivalente; prueba visual del encuadre y del respaldo pendiente.
 - Escena de Tierra (2026-11-14): creada `src/game/levels/earth/EarthScene.ts` extendiendo ExplorationScene, que ahora recibe la clave de escena y permanece como base reutilizable. `src/game/levels/registry.ts` sustituye a levels.ts con la clave `earth`; sceneRegistry asocia `earth` con EarthScene y las importaciones de GamePage, LevelSelectScreen y LevelCard apuntan al nuevo registro. Revisión de imports sin referencias a `levels.ts` ni a la clave `exploration`. Comprobación en el servidor de desarrollo existente: HTTP 200 de los módulos nuevos y actualizados. No se ejecutó build, tsc ni equivalente; verificación de compilación y prueba visual/interactiva pendientes de autorización.
 - Importaciones CSS (2026-11-14): movido vite-env.d.ts desde la raíz a src/vite-env.d.ts, conservando la referencia a vite/client. tsconfig.app.json ya incluye src; el archivo anterior quedaba fuera de su alcance. Verificado que vite/client declara el módulo '*.css' y que las importaciones siguen siendo normales. No se encontraron @ts-ignore ni @ts-expect-error en el código propio revisado. Sin cambios de configuración TypeScript ni componentes. Verificación por inspección; no se ejecutó compilación ni comprobación con tsc, pendiente de autorización.
 - Separación ui/shared (2026-11-14): revisadas importaciones y ausencia de referencias antiguas en src. El servidor de desarrollo existente devuelve HTTP 200 para los cinco componentes migrados, sus cinco CSS y las cuatro páginas consumidoras. No se ejecutó compilación; build pendiente de autorización. Prueba visual/interactiva pendiente en navegador.

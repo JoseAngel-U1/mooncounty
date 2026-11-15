@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 2026-11-14 — Corrección de franjas vacías en Tierra
+- Diagnóstico: con el viewport más ancho que el mapa (1451 px), Phaser mantenía `scrollX = 0` y el resto del canvas mostraba el fondo del juego.
+- ExplorationScene expone `getCameraZoom` (1 por defecto); EarthScene lo sobrescribe con `max(1, viewport/anchoMapa, altoMapa)` para cubrir el viewport con escala uniforme, sin deformar el PNG.
+- Se conservan mundo, límites, movimiento WASD/flechas, navegación y respaldo con cuadrícula.
+- Verificación mediante capturas headless a 1920×1080, 1600×900 y 1280×720 sin franjas de fondo. No se ejecutó build ni equivalente.
+
+## 2026-11-14 — Mapa pixel art de Tierra
+- EarthScene carga `/assets/levels/earth/map.png` en preload y lo muestra a escala 1:1 con origen en (0,0), sin estiramientos.
+- El mundo físico y los límites de cámara usan las dimensiones reales del PNG (1451 × 1084); la cámara sigue al astronauta y WASD/flechas se conservan.
+- ExplorationScene expone `getWorldSize` y `renderBackground` para que cada nivel ajuste mundo y fondo sin duplicar lógica. El respaldo con cuadrícula y mundo del tamaño del canvas se mantiene si el PNG falta o no carga.
+- Sin colisiones, NPC, misiones, inventario ni cambios en otros niveles.
+- Verificación por revisión de código y HTTP 200 del PNG y módulos en el servidor existente. No se ejecutó build ni equivalente; prueba visual pendiente.
+
 ## 2026-11-14 — Escena independiente de Tierra
 - Creada `src/game/levels/earth/EarthScene.ts`, que extiende ExplorationScene y usa la clave `earth`.
 - ExplorationScene se mantiene como escena base reutilizable en `src/game/scenes/` y ahora recibe su clave por constructor, sin duplicar movimiento, cámara ni límites.

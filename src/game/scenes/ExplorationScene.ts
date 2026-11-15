@@ -4,6 +4,8 @@ const SPEED = 220;
 
 type MovementKeys = Record<'up' | 'down' | 'left' | 'right' | 'w' | 'a' | 's' | 'd', Phaser.Input.Keyboard.Key>;
 
+export type WorldSize = { width: number; height: number };
+
 // Escena base reutilizable: recibe la clave de la escena específica del nivel.
 export class ExplorationScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -32,7 +34,8 @@ export class ExplorationScene extends Phaser.Scene {
     astronaut.generateTexture('astronaut-placeholder', 32, 40);
     astronaut.destroy();
 
-    this.player = this.physics.add.sprite(this.scale.width / 2, this.scale.height / 2, 'astronaut-placeholder');
+    const world = this.getWorldSize(this.scale.gameSize);
+    this.player = this.physics.add.sprite(world.width / 2, world.height / 2, 'astronaut-placeholder');
     this.player.setCollideWorldBounds(true);
     // El cuerpo cubre toda la textura para que ninguna parte salga del canvas.
     this.player.body?.setSize(this.player.width, this.player.height);
@@ -55,17 +58,18 @@ export class ExplorationScene extends Phaser.Scene {
     });
   }
 
-  private resizeWorld(gameSize: Phaser.Structs.Size) {
-    const { width, height } = gameSize;
-    if (width <= 0 || height <= 0) return;
+  // Los niveles pueden sustituir el tamaño del mundo sin alterar el movimiento.
+  protected getWorldSize(gameSize: Phaser.Structs.Size): WorldSize {
+    return { width: gameSize.width, height: gameSize.height };
+  }
 
-    this.physics.world.setBounds(0, 0, width, height);
-    const camera = this.cameras.main;
-    camera.setViewport(0, 0, width, height);
-    camera.setZoom(1);
-    camera.setBounds(0, 0, width, height);
-    camera.setScroll(0, 0);
+  // Zoom de la cámara; los niveles pueden ampliar para cubrir el viewport.
+  protected getCameraZoom(_viewport: WorldSize, _world: WorldSize): number {
+    return 1;
+  }
 
+  // Fondo provisional compartido mientras un nivel no aporte el suyo.
+  protected renderBackground(width: number, height: number) {
     this.ground.clear();
     this.ground.fillStyle(0x183c38);
     this.ground.fillRect(0, 0, width, height);
@@ -78,13 +82,27 @@ export class ExplorationScene extends Phaser.Scene {
     }
     this.ground.lineStyle(4, 0x89d4ad);
     this.ground.strokeRect(2, 2, Math.max(0, width - 4), Math.max(0, height - 4));
+  }
+
+  private resizeWorld(gameSize: Phaser.Structs.Size) {
+    if (gameSize.width <= 0 || gameSize.height <= 0) return;
+    const world = this.getWorldSize(gameSize);
+    if (world.width <= 0 || world.height <= 0) return;
+
+    this.physics.world.setBounds(0, 0, world.width, world.height);
+    const camera = this.cameras.main;
+    camera.setViewport(0, 0, gameSize.width, gameSize.height);
+    camera.setZoom(this.getCameraZoom(gameSize, world));
+    camera.setBounds(0, 0, world.width, world.height);
+
+    this.renderBackground(world.width, world.height);
 
     const halfWidth = this.player.displayWidth / 2;
     const halfHeight = this.player.displayHeight / 2;
-    const x = width >= this.player.displayWidth
-      ? Phaser.Math.Clamp(this.player.x, halfWidth, width - halfWidth) : width / 2;
-    const y = height >= this.player.displayHeight
-      ? Phaser.Math.Clamp(this.player.y, halfHeight, height - halfHeight) : height / 2;
+    const x = world.width >= this.player.displayWidth
+      ? Phaser.Math.Clamp(this.player.x, halfWidth, world.width - halfWidth) : world.width / 2;
+    const y = world.height >= this.player.displayHeight
+      ? Phaser.Math.Clamp(this.player.y, halfHeight, world.height - halfHeight) : world.height / 2;
     // Sincroniza también el cuerpo físico antes del siguiente paso de simulación.
     this.player.body?.reset(x, y);
   }
