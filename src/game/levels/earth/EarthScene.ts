@@ -3,11 +3,13 @@ import { ExplorationScene } from '../../scenes/ExplorationScene';
 import type { PlayerSpawn, WorldSize } from '../../scenes/ExplorationScene';
 import { EarthCollisionEditor } from './earthCollisionEditor';
 import { ProximityInteractionSystem } from '../../interactions/ProximityInteractionSystem';
-import { createEarthInteractions } from './earthInteractions';
+import { createEarthInteractions, EARTH_COORDINATOR_POSITION } from './earthInteractions';
 import { createEarthMissionState } from './earthMissionState';
 
 const MAP_KEY = 'earth-map';
 const MAP_PATH = '/assets/levels/earth/map.png';
+const NPC_TEXTURE_KEY = 'astronaut-placeholder';
+const NPC_TINT = 0xffcf66;
 
 // Spam del Astronauta
 const EARTH_PLAYER_SPAWN: Readonly<PlayerSpawn> = {
@@ -35,6 +37,7 @@ export class EarthScene extends ExplorationScene {
       this.mapImage = this.add.image(0, 0, MAP_KEY).setOrigin(0, 0).setScale(1);
     }
     super.create();
+    this.createCoordinator();
 
     this.collisionEditor = new EarthCollisionEditor(this, this.player);
     this.collisionEditor.create();
@@ -52,6 +55,19 @@ export class EarthScene extends ExplorationScene {
     }
 
     super.update();
+  }
+
+  private createCoordinator() {
+    this.add.sprite(EARTH_COORDINATOR_POSITION.x, EARTH_COORDINATOR_POSITION.y, NPC_TEXTURE_KEY)
+      .setTint(NPC_TINT)
+      .setDepth(1);
+    this.add.text(EARTH_COORDINATOR_POSITION.x, EARTH_COORDINATOR_POSITION.y - 26, 'Coordinador', {
+      fontFamily: 'sans-serif',
+      fontSize: '12px',
+      color: '#ffffff',
+      backgroundColor: '#142b35',
+      padding: { x: 4, y: 2 },
+    }).setOrigin(0.5, 1).setDepth(2);
   }
 
   protected override getPlayerSpawn(): PlayerSpawn {

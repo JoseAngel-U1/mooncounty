@@ -38,6 +38,9 @@
 ## Recogida de traje autorizada
 - **D-25 (2026-11-15, aprobada por el usuario):** sustituir la prueba de D-24 por la recogida única de un traje en Tierra. Estado `hasSpacesuit` inicialmente false por sesión, true tras la primera E; mensajes «Traje espacial equipado» y «Ya tienes un traje espacial» en repeticiones. Aviso específico «Presiona E para recoger traje». Estado en memoria, sin inventario completo ni cambio de sprite y sin alterar las reglas de despegue. Ampliación registrada en MISSION_01.
 
+## Coordinador de misión autorizado
+- **D-26 (2026-11-15, aprobada por el usuario):** añadir un NPC coordinador visible en Tierra, adicional al ingeniero, reutilizando la textura del astronauta con tinte y etiqueta para no generar imágenes nuevas. Su posición provisional queda claramente configurable en `EARTH_COORDINATOR_POSITION` y puede ajustarse sin tocar la lógica. La interacción usa el sistema de proximidad/E existente: sin traje muestra «Coordinador: Primero debes recoger un traje espacial»; con traje y sin solicitud previa muestra el encargo de coordenadas y registra `coordinatesRequested = true`; las repeticiones muestran un recordatorio breve. Estado en memoria de la sesión. No implementa objeto de coordenadas, documentos, ingeniero, código de lanzamiento ni otros niveles.
+
 ## Por concretar antes de implementarlo
 - Diseño visual y distribución exacta del mapa.
 - Contenido preciso del código de 4 dígitos: fijo, generado por partida o asignado por ingeniero.

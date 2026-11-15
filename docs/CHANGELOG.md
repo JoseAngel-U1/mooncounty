@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-11-15 — NPC coordinador y solicitud de coordenadas
+- Añadido coordinador visible en Tierra como sprite independiente, reutilizando `astronaut-placeholder` con tinte y etiqueta «Coordinador»; sin generar imágenes nuevas.
+- Posición provisional centralizada en `EARTH_COORDINATOR_POSITION` (`X=930`, `Y=850`) de `earthInteractions.ts`, ajustable sin tocar la lógica. Radio de interacción 90 y aviso «Presiona E para hablar».
+- Diálogos: sin traje, «Coordinador: Primero debes recoger un traje espacial»; con traje y sin solicitud previa, encargo de coordenadas y `coordinatesRequested = true`; repeticiones, recordatorio breve.
+- Estado ampliado en `earthMissionState.ts` y reiniciado al crear la escena. Sin objeto de coordenadas, documentos, ingeniero, código de lanzamiento ni otros niveles. Traje, movimiento, colisiones, cámara y F3 conservados.
+- Pruebas en memoria correctas para proximidad, estados y mensajes. Prueba visual pendiente; sin build ni tsc.
+
 ## 2026-11-15 — Recogida única de traje espacial en Tierra
 - Sustituida la acción de prueba por recogida funcional: aviso «Presiona E para recoger traje», primera recogida «Traje espacial equipado» y repeticiones «Ya tienes un traje espacial».
 - Estado único `EarthScene.missionState.hasSpacesuit`, inicialmente false y restablecido al crear la escena. `earthMissionState.ts` define su tipo y fábrica; `earthInteractions.ts` conserva coordenadas y radio y recibe la referencia al estado de la sesión.

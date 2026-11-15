@@ -18,6 +18,14 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - En este paso el estado se mantiene únicamente en memoria de la escena; el inventario inferior descrito anteriormente queda pendiente de implementación. Al crear una nueva sesión se restablece a false.
 - Esta ampliación no añade requisitos de traje a las comprobaciones de despegue ni implementa otras etapas.
 
+### Ampliación autorizada: coordinador (2026-11-15)
+- Se añade un NPC coordinador visible en Tierra, además del ingeniero; no lo sustituye.
+- Su posición provisional se configura en `EARTH_COORDINATOR_POSITION`, en `earthInteractions.ts`, y se reutiliza la textura del astronauta con tinte y etiqueta.
+- Sin `hasSpacesuit`: «Coordinador: Primero debes recoger un traje espacial».
+- Con traje y `coordinatesRequested = false`: «Coordinador: Necesitamos las coordenadas de lanzamiento. Encuéntralas y regresa conmigo»; después se registra `coordinatesRequested = true`.
+- Nuevas conversaciones antes de conseguir las coordenadas muestran «Coordinador: Aún faltan las coordenadas de lanzamiento.»
+- El estado se mantiene en memoria de la sesión. No se implementan todavía el objeto de coordenadas, documentos, ingeniero ni código de lanzamiento.
+
 ### Flujo general documentado
 1. Buscar y recoger documento «Coordenada X».
 2. Buscar y recoger documento «Coordenada Y».
