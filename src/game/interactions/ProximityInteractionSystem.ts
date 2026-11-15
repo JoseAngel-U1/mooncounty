@@ -10,15 +10,18 @@ export class ProximityInteractionSystem {
   private readonly message: Phaser.GameObjects.Text;
   private readonly interactKey?: Phaser.Input.Keyboard.Key;
   private messageUntil = 0;
+  private readonly textOffset: number;
 
   constructor(
     scene: Phaser.Scene,
     player: Phaser.GameObjects.Components.Transform,
     objects: readonly InteractiveObject[],
+    textOffset = 0,
   ) {
     this.scene = scene;
     this.player = player;
     this.objects = objects;
+    this.textOffset = textOffset;
     const style: Phaser.Types.GameObjects.Text.TextStyle = {
       fontFamily: 'sans-serif',
       fontSize: '16px',
@@ -52,7 +55,7 @@ export class ProximityInteractionSystem {
     const nearest = findNearestInteractiveObject(this.objects, this.player);
     this.indicator.setText(nearest?.prompt ?? 'Presiona E para interactuar');
     this.indicator.setVisible(Boolean(nearest));
-    this.positionText(this.indicator, 30);
+    this.positionText(this.indicator, 30 + this.textOffset);
 
     if (pressed && nearest) {
       nearest.action({
@@ -64,7 +67,7 @@ export class ProximityInteractionSystem {
     }
 
     this.message.setVisible(this.scene.time.now < this.messageUntil);
-    this.positionText(this.message, 70);
+    this.positionText(this.message, 70 + this.textOffset);
   }
 
   private positionText(text: Phaser.GameObjects.Text, offset: number) {

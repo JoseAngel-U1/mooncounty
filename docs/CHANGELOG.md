@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## 2026-11-15 — Elevador vertical exclusivo en Tierra (sustituye D-31)
+- Reescrito `src/game/levels/earth/earthElevator.ts` para traslado solo vertical: X constante y extremos confirmados Y=415 (superior) e Y=690 (inferior).
+- Zonas de activación confirmadas: `(1247, 395, 148, 40)` y `(1247, 675, 148, 40)`. Activación automática sin E al estar en la zona y dentro de la columna de 22 px centrada en X=1321 (1310–1332); no se ajusta X automáticamente, por lo que entrar en la zona fuera de la columna no activa.
+- Subida con `walkUp` y bajada con `walkDown`; `body.moves=false` y bloqueo de movimiento/E durante el tween (`Sine.easeInOut`, ~275 px en ~2 s), restaurados al terminar. Solo se ignora la colisión `elebador` al comprobar el recorrido; no se modifica ni elimina.
+- Anti-bucle más estricto: la zona de llegada queda bloqueada hasta abandonarla por completo. F3 interrumpe y restaura. EarthScene no necesitó cambios (misma interfaz y animaciones existentes).
+- Pruebas Node de geometría, activación, X constante, física, animaciones e interrupción correctas. Sin build ni tsc; prueba visual pendiente. Documentada D-32 y actualizado el estado de D-31.
+
+## 2026-11-15 — Elevador automático bidireccional en Tierra (sustituido por el elevador vertical)
+- Añadido `src/game/levels/earth/earthElevator.ts`: traslado automático entre A `(1247, 395, 148, 40)` y B `(1399, 394, 9, 40)` sin pulsar E. Entrar en A lleva a B; tocar el borde oeste de B lleva a A.
+- Llegadas calculadas con el cuerpo completo 22×31: A `(1321, 415)` y B `(1388, 414)`. B queda justo fuera de la colisión `entrada-superior`; ambas libres y unidas por un recorrido barrido sin obstáculos.
+- Interpolación suave con Phaser (`Sine.easeInOut`) y animación lateral existente. Movimiento e interacciones bloqueados durante el traslado y restaurados al terminar; anti-bucle hasta alejarse de la zona de llegada.
+- Integrado únicamente en EarthScene; colisiones, sprites, apariencia, NPC, misión, radios y otros niveles intactos. F3 interrumpe el traslado. Pruebas Node de geometría, activación y dobles de Phaser correctas; prueba visual y tsc pendientes. Decisión D-31 registrada.
+
+## 2026-11-15 — Escala visual 2× de astronautas en Tierra
+- Constante `EARTH_ASTRONAUT_SCALE` en `earthPlayerSprites.ts`: jugador, coordinador e ingeniero a 64×64, sin modificar PNG ni suavizado.
+- Compensación de tamaño/offset del cuerpo para conservar 22×31 y posición mundial, también al equipar el traje. Ajuste de posiciones al resize conservado mediante extensión de la escena base.
+- Etiquetas a 42 px y avisos E a 46 px del centro; margen adicional de textos configurable con valor por defecto cero en el sistema compartido. Radios y lógica de interacción intactos.
+- Prueba con Arcade Body real correcta para dimensiones y posición tras escala, reconfiguración y flipX. Prueba visual pendiente; sin build ni tsc. Decisión D-30 registrada.
+
+## 2026-11-15 — Recogida de coordenadas de lanzamiento
+- Punto interactivo sobre rectángulo `(221, 431, 45, 41)`, centro calculado `(243.5, 451.5)`, radio 60 y aviso «Presiona E para obtener coordenadas».
+- Requiere traje y solicitud del coordinador; primera E establece `hasCoordinates` y muestra el mensaje de entrega al ingeniero. Repeticiones informan que ya las tiene o ya las entregó, sin nuevas recogidas.
+- Retirados avisos de ubicación pendiente de los NPC; el flujo hasta `4826` usa ya la recogida real. Sin nuevas colisiones, cambios de posición ni interacción con la nave.
+- Pruebas en memoria correctas del flujo completo, requisitos, repetición, reinicio y acceso geométrico al centro. Ingeniero/E confirmados visualmente por el usuario. Recogida visual pendiente; sin build ni tsc. Actualizados MISSION_01, WORK_STATUS, ROADMAP y decisión D-29.
+
+## 2026-11-15 — Ingeniero y flujo definitivo de Tierra
+- Ingeniero en `(164, 108)` con tinte azul, etiqueta y reposo existente del astronauta sin casco, sin recursos nuevos. Radio E de 90; posición y colisiones conservadas.
+- Se mantiene `coordinatesRequested`; se añaden `hasCoordinates`, `hasTrajectoryData` y `launchCode`. Ingeniero recibe coordenadas y entrega datos; coordinador solicita coordenadas y posteriormente entrega código fijo `4826` desde `earthMissionConfig.ts`. Diálogos fuera de orden y de repetición.
+- Recogida de coordenadas pendiente de ubicación confirmada; no se crea objeto ni se desbloquea automáticamente. Nave pendiente. Flujo y requisitos documentados en MISSION_01, D-28 y ROADMAP.
+- Pruebas en memoria correctas para progresión, repetición y reinicio; ruta transitable hasta `(164, 180)` comprobada geométricamente con cuerpo y colisiones reales. Prueba visual pendiente; sin build ni tsc.
+
+## 2026-11-15 — Sprites reales del jugador y animaciones por dirección
+- Verificación final en memoria correcta: rangos de ambas variantes, registro sin duplicados y callback del traje único. La repetición de HTTP quedó bloqueada por `ECONNREFUSED` en localhost:5173; prueba visual pendiente.
+- Añadido `src/game/levels/earth/earthPlayerSprites.ts` para cargar los PNG individuales de `public/assets/characters/` y registrar animaciones: reposo 1–16, caminar lateral 25–32 con `flipX`, caminar arriba 33–38 y caminar abajo 39–44. Los frames 17–24 (sentado) no se cargan ni se usan; no se implementa carrera.
+- El jugador inicia con `astronauta_sin_casco` y cambia a `astronauta_con _casco` al recoger el traje mediante `onSpacesuitEquipped`; movimiento, posición, cámara y colisiones se conservan. El coordinador reutiliza el frame con casco con tinte y etiqueta.
+- `ExplorationScene` expone puntos de extensión para textura, cuerpo físico y animación del jugador, conservando el placeholder como respaldo si faltan assets. Tierra ajusta el cuerpo a 22×31 con offset (5, 1) y reproduce la animación según la dirección de movimiento.
+- Registrada la decisión D-27 y actualizada la documentación de misión y estado. Verificados 72 PNG necesarios, HTTP 200 de recursos/módulos y transformación de Vite; sin build ni tsc, prueba visual pendiente.
+
 ## 2026-11-15 — NPC coordinador y solicitud de coordenadas
 - Añadido coordinador visible en Tierra como sprite independiente, reutilizando `astronaut-placeholder` con tinte y etiqueta «Coordinador»; sin generar imágenes nuevas.
 - Posición provisional centralizada en `EARTH_COORDINATOR_POSITION` (`X=930`, `Y=850`) de `earthInteractions.ts`, ajustable sin tocar la lógica. Radio de interacción 90 y aviso «Presiona E para hablar».

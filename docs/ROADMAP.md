@@ -41,14 +41,16 @@ Entregar una demostración web funcional de la primera misión durante el hackat
 ### Fase 2 — Mapa y colisiones
 - [ ] Definir mapa pequeño con áreas funcionales.
 - [ ] Añadir paredes/obstáculos y colisiones.
-- [ ] Ubicar documentos, ingeniero, combustible y nave con marcadores provisionales.
+- [x] Elevador automático exclusivamente vertical con X=1321 entre Y=690 y Y=415; zonas `(1247, 395, 148, 40)` y `(1247, 675, 148, 40)`; activación solo dentro de la columna de la cabina; `walkUp`/`walkDown`, anti-bucle y bloqueo temporal. Solo se ignora `elebador` durante el recorrido, sin modificar colisiones. Pruebas en memoria correctas, prueba visual pendiente.
+- [ ] Completar ubicación de combustible y nave. Ingeniero en `(164, 108)` y punto de coordenadas centrado en `(243.5, 451.5)` por autorización; no inventar ubicaciones pendientes.
 **Criterio:** el jugador recorre mapa y no atraviesa obstáculos.
 
 ### Fase 3 — Interacción e inventario
 - [ ] Detección de proximidad y texto «Presiona E».
-- [ ] Recoger coordenadas X, Y y combustible.
+- [x] Implementar recogida de coordenadas con traje y solicitud previa en `(243.5, 451.5)`; pruebas en memoria correctas, prueba visual pendiente.
+- [ ] Implementar recogida de combustible.
 - [ ] Inventario inferior sincronizado con Phaser.
-- [ ] Interacción con ingeniero, requisitos y entrega del código.
+- [ ] Validar en navegador el flujo completo: solicitud del coordinador → coordenadas → ingeniero entrega datos de trayectoria → coordinador entrega código `4826`. Recogida y lógica de NPC implementadas; pruebas en memoria correctas. Ingeniero validado visualmente por el usuario.
 **Criterio:** completar secuencia de búsqueda e ingeniero.
 
 ### Fase 4 — Nave, validaciones y consecuencias

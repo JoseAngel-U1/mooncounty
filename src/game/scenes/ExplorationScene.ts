@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 const SPEED = 220;
+const PLACEHOLDER_TEXTURE_KEY = 'astronaut-placeholder';
 
 type MovementKeys = Record<'up' | 'down' | 'left' | 'right' | 'w' | 'a' | 's' | 'd', Phaser.Input.Keyboard.Key>;
 
@@ -20,27 +21,10 @@ export class ExplorationScene extends Phaser.Scene {
   create() {
     this.ground = this.add.graphics();
 
-    const astronaut = this.make.graphics({ x: 0, y: 0 });
-    astronaut.fillStyle(0x7997a0);
-    astronaut.fillRect(4, 12, 24, 18);
-    astronaut.fillStyle(0xe5eee6);
-    astronaut.fillRect(8, 4, 16, 14);
-    astronaut.fillRect(9, 18, 14, 12);
-    astronaut.fillRect(8, 30, 6, 6);
-    astronaut.fillRect(18, 30, 6, 6);
-    astronaut.fillStyle(0x163549);
-    astronaut.fillRect(10, 7, 12, 7);
-    astronaut.fillStyle(0x89d4ad);
-    astronaut.fillRect(12, 8, 4, 2);
-    astronaut.generateTexture('astronaut-placeholder', 32, 40);
-    astronaut.destroy();
-
     const spawn = this.getPlayerSpawn();
-    this.player = this.physics.add.sprite(spawn.x, spawn.y, 'astronaut-placeholder');
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, this.getPlayerTextureKey());
     this.player.setCollideWorldBounds(true);
-    // El cuerpo cubre toda la textura para que ninguna parte salga del canvas.
-    this.player.body?.setSize(this.player.width, this.player.height);
-    this.player.body?.setOffset(0, 0);
+    this.configurePlayerBody();
 
     this.keys = this.input.keyboard?.addKeys({
       up: Phaser.Input.Keyboard.KeyCodes.UP,
@@ -59,9 +43,52 @@ export class ExplorationScene extends Phaser.Scene {
     });
   }
 
+  protected getPlayerTextureKey(): string {
+    return this.ensurePlaceholderPlayerTexture();
+  }
+
+  protected configurePlayerBody() {
+    const body = this.player.body as Phaser.Physics.Arcade.Body | null;
+    if (!body) return;
+
+    body.setSize(this.player.width, this.player.height, false);
+    body.setOffset(0, 0);
+  }
+
+  protected setPlayerTexture(textureKey: string) {
+    if (this.player.texture.key === textureKey) return;
+
+    this.player.anims.stop();
+    this.player.setTexture(textureKey);
+    this.configurePlayerBody();
+  }
+
+  protected updatePlayerAnimation(_horizontal: number, _vertical: number) {}
+
   protected getPlayerSpawn(): PlayerSpawn {
     const world = this.getWorldSize(this.scale.gameSize);
     return { x: world.width / 2, y: world.height / 2 };
+  }
+
+  private ensurePlaceholderPlayerTexture(): string {
+    if (this.textures.exists(PLACEHOLDER_TEXTURE_KEY)) return PLACEHOLDER_TEXTURE_KEY;
+
+    const astronaut = this.make.graphics({ x: 0, y: 0 });
+    astronaut.fillStyle(0x7997a0);
+    astronaut.fillRect(4, 12, 24, 18);
+    astronaut.fillStyle(0xe5eee6);
+    astronaut.fillRect(8, 4, 16, 14);
+    astronaut.fillRect(9, 18, 14, 12);
+    astronaut.fillRect(8, 30, 6, 6);
+    astronaut.fillRect(18, 30, 6, 6);
+    astronaut.fillStyle(0x163549);
+    astronaut.fillRect(10, 7, 12, 7);
+    astronaut.fillStyle(0x89d4ad);
+    astronaut.fillRect(12, 8, 4, 2);
+    astronaut.generateTexture(PLACEHOLDER_TEXTURE_KEY, 32, 40);
+    astronaut.destroy();
+
+    return PLACEHOLDER_TEXTURE_KEY;
   }
 
   // Los niveles pueden sustituir el tamaño del mundo sin alterar el movimiento.
@@ -90,6 +117,10 @@ export class ExplorationScene extends Phaser.Scene {
     this.ground.strokeRect(2, 2, Math.max(0, width - 4), Math.max(0, height - 4));
   }
 
+  protected getPlayerBoundsSize(): WorldSize {
+    return { width: this.player.displayWidth, height: this.player.displayHeight };
+  }
+
   private resizeWorld(gameSize: Phaser.Structs.Size) {
     if (gameSize.width <= 0 || gameSize.height <= 0) return;
     const world = this.getWorldSize(gameSize);
@@ -103,11 +134,12 @@ export class ExplorationScene extends Phaser.Scene {
 
     this.renderBackground(world.width, world.height);
 
-    const halfWidth = this.player.displayWidth / 2;
-    const halfHeight = this.player.displayHeight / 2;
-    const x = world.width >= this.player.displayWidth
+    const playerSize = this.getPlayerBoundsSize();
+    const halfWidth = playerSize.width / 2;
+    const halfHeight = playerSize.height / 2;
+    const x = world.width >= playerSize.width
       ? Phaser.Math.Clamp(this.player.x, halfWidth, world.width - halfWidth) : world.width / 2;
-    const y = world.height >= this.player.displayHeight
+    const y = world.height >= playerSize.height
       ? Phaser.Math.Clamp(this.player.y, halfHeight, world.height - halfHeight) : world.height / 2;
     // Sincroniza también el cuerpo físico antes del siguiente paso de simulación.
     this.player.body?.reset(x, y);
@@ -116,7 +148,10 @@ export class ExplorationScene extends Phaser.Scene {
   update() {
     this.player.setVelocity(0, 0);
     const focused = this.game.canvas.parentElement?.contains(document.activeElement);
-    if (!this.keys || !focused) return;
+    if (!this.keys || !focused) {
+      this.updatePlayerAnimation(0, 0);
+      return;
+    }
 
     const horizontal = Number(this.keys.right.isDown || this.keys.d.isDown)
       - Number(this.keys.left.isDown || this.keys.a.isDown);
@@ -124,5 +159,6 @@ export class ExplorationScene extends Phaser.Scene {
       - Number(this.keys.up.isDown || this.keys.w.isDown);
     const direction = new Phaser.Math.Vector2(horizontal, vertical).normalize().scale(SPEED);
     this.player.setVelocity(direction.x, direction.y);
+    this.updatePlayerAnimation(horizontal, vertical);
   }
 }
