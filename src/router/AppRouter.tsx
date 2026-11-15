@@ -6,6 +6,7 @@ import GamePage from '../pages/GamePage/GamePage';
 import MoonJourneyPage from '../pages/MoonJourneyPage/MoonJourneyPage';
 import NotFoundPage from '../pages/NotFoundPage/NotFoundPage';
 
+
 export default function AppRouter() {
   return (
     <BrowserRouter>

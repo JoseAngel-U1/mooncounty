@@ -3,12 +3,22 @@ import { sceneRegistry } from './scenes/sceneRegistry';
 import type { SceneKey } from './scenes/sceneRegistry';
 
 export function createGame(parent: HTMLElement, sceneKey: SceneKey): Phaser.Game {
-  const Scene = sceneRegistry[sceneKey];
+  // 1. Obtenemos la clase de la escena que REALMENTE quieres abrir
+  const TargetScene = sceneRegistry[sceneKey];
+  
+  // 2. Sacamos todas las demás escenas del registro
+  const allScenes = Object.values(sceneRegistry);
+
+  // 3. Ordenamos el arreglo para que la escena solicitada sea la PRIMERA 
+  // (así Phaser la registra y la arranca de inmediato sin tocar la de exploración)
+  const orderedScenes = [
+    TargetScene,
+    ...allScenes.filter((s) => s !== TargetScene)
+  ];
 
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    // Recibir las teclas antes del preventDefault delegado de React.
     input: { keyboard: { target: parent } },
     width: parent.clientWidth,
     height: parent.clientHeight,
@@ -22,6 +32,7 @@ export function createGame(parent: HTMLElement, sceneKey: SceneKey): Phaser.Game
       default: 'arcade',
       arcade: { gravity: { x: 0, y: 0 }, debug: false },
     },
-    scene: [new Scene()],
+    // Pasamos el arreglo ordenado para que arranque en la que pediste
+    scene: orderedScenes,
   });
 }

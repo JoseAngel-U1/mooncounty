@@ -10,15 +10,13 @@ import {
 } from '../levels/moonJourneyCollision';
 
 // ======================================================
-// CONFIGURACIÓN
+// CONFIGURACIÓN GENERAL
 // ======================================================
 
 const BACKGROUND_KEY = 'mission-2-interior-bg';
 
-const SPEED = 150;
+const SPEED = 80;
 const ACCELERATION = 450;
-
-// Gravedad cero: inercia y resistencia espacial.
 const SPACE_DRAG = 0.985;
 
 const PLAYER_BODY_WIDTH = 22;
@@ -32,30 +30,35 @@ const MAX_STRIPS = 64;
 const DEBUG_COLLISIONS = false;
 
 // ======================================================
-// POSICIONES DE LOS OBJETOS
-// Mapa de referencia: 900 x 500
-// Ajustables según la posición real de tu imagen.
+// POSICIONES DE LOS OBJETOS (MAPA 900 x 500)
 // ======================================================
 
-// Tres cajas amarillas del lado derecho.
+// ROSA: CASCO
+const HELMET_POSITION = {
+  x: 185,
+  y: 225,
+};
+
+// ROJO: CUERDA
+const TETHER_POSITION = {
+  x: 144,
+  y: 385,
+};
+
+// AZUL: SALIDA
+const EXIT_POSITION = {
+  x: 221,
+  y: 386,
+};
+
+// NARANJA: HERRAMIENTAS
 const TOOLS_POSITION = {
-  x: 740,
+  x: 743,
   y: 240,
 };
 
-// Círculo inferior izquierdo.
-const TETHER_POSITION = {
-  x: 140,
-  y: 340,
-};
-
-// Puerta central de salida.
-const EXIT_POSITION = {
-  x: 490,
-  y: 220,
-};
-
-const EXTERIOR_SCENE_KEY = 'exterior';
+//--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+const EXTERIOR_SCENE_KEY = 'exterior-scene';
 
 // ======================================================
 // TIPOS
@@ -73,7 +76,12 @@ type Rect = {
   height: number;
 };
 
-type Interaction = 'tools' | 'tether' | 'exit' | null;
+type Interaction =
+  | 'helmet'
+  | 'tools'
+  | 'tether'
+  | 'exit'
+  | null;
 
 // ======================================================
 // UTILIDADES DE COLISIONES
@@ -187,7 +195,7 @@ function polygonToRects(
 }
 
 // ======================================================
-// ESCENA
+// ESCENA PRINCIPAL
 // ======================================================
 
 export class ShipInteriorScene extends Phaser.Scene {
@@ -206,6 +214,8 @@ export class ShipInteriorScene extends Phaser.Scene {
   // INVENTARIO
   // ----------------------------------------------------
 
+  private hasHelmet = false;
+
   private hasTools = false;
 
   private hasTether = false;
@@ -213,6 +223,8 @@ export class ShipInteriorScene extends Phaser.Scene {
   // ----------------------------------------------------
   // OBJETOS INTERACTIVOS
   // ----------------------------------------------------
+
+  private helmetMarker!: Phaser.GameObjects.Container;
 
   private toolsMarker!: Phaser.GameObjects.Container;
 
@@ -223,6 +235,8 @@ export class ShipInteriorScene extends Phaser.Scene {
   private activeInteraction: Interaction = null;
 
   private isCollecting = false;
+
+  private isExiting = false;
 
   // ----------------------------------------------------
   // INTERFAZ
@@ -255,7 +269,7 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // CARGA
+  // PRELOAD
   // ====================================================
 
   preload() {
@@ -271,19 +285,19 @@ export class ShipInteriorScene extends Phaser.Scene {
 
   create() {
 
-    // FONDO PRINCIPAL
+    // FONDO
     this.add.image(0, 0, BACKGROUND_KEY)
       .setOrigin(0, 0)
       .setDepth(0);
 
-    // ESTRELLAS Y LUCES AMBIENTALES
+    // ESTRELLAS Y LUCES
     this.createAmbientEffects();
 
-    // OBJETOS INTERACTIVOS
+    // CASCO, CUERDA, HERRAMIENTAS Y SALIDA
     this.createInteractionObjects();
 
     // --------------------------------------------------
-    // SPRITE DEL ASTRONAUTA
+    // CREAR ASTRONAUTA
     // --------------------------------------------------
 
     if (!this.textures.exists('astronaut-placeholder')) {
@@ -318,7 +332,6 @@ export class ShipInteriorScene extends Phaser.Scene {
       astronaut.destroy();
     }
 
-    // CREAR JUGADOR
     this.player = this.physics.add.sprite(
       SHIP_INTERIOR_SPAWN_POINT.x,
       SHIP_INTERIOR_SPAWN_POINT.y,
@@ -345,15 +358,9 @@ export class ShipInteriorScene extends Phaser.Scene {
 
     body.setDamping(true);
 
-    body.setDrag(
-      SPACE_DRAG,
-      SPACE_DRAG,
-    );
+    body.setDrag(SPACE_DRAG, SPACE_DRAG);
 
-    body.setMaxVelocity(
-      SPEED,
-      SPEED,
-    );
+    body.setMaxVelocity(SPEED, SPEED);
 
     // --------------------------------------------------
     // COLISIONES
@@ -366,7 +373,7 @@ export class ShipInteriorScene extends Phaser.Scene {
     );
 
     // --------------------------------------------------
-    // TECLADO
+    // CONTROLES
     // --------------------------------------------------
 
     this.keys = this.input.keyboard?.addKeys({
@@ -416,10 +423,7 @@ export class ShipInteriorScene extends Phaser.Scene {
       SHIP_INTERIOR_HEIGHT,
     );
 
-    // --------------------------------------------------
     // INTERFAZ
-    // --------------------------------------------------
-
     this.createInterface();
 
     // ESCALADO
@@ -449,7 +453,6 @@ export class ShipInteriorScene extends Phaser.Scene {
 
   private createInterface() {
 
-    // INVENTARIO
     this.inventoryText = this.add.text(
       18,
       18,
@@ -470,7 +473,6 @@ export class ShipInteriorScene extends Phaser.Scene {
       .setScrollFactor(0)
       .setDepth(100);
 
-    // FONDO DE NOTIFICACIÓN
     this.hintBackground = this.add.rectangle(
       0,
       0,
@@ -486,7 +488,6 @@ export class ShipInteriorScene extends Phaser.Scene {
       .setStrokeStyle(1, 0x6dd5ed)
       .setVisible(false);
 
-    // TEXTO DE NOTIFICACIÓN
     this.interactionHint = this.add.text(
       0,
       0,
@@ -537,8 +538,9 @@ export class ShipInteriorScene extends Phaser.Scene {
 
     this.inventoryText.setText([
       'INVENTARIO DE MISIÓN',
-      `Herramientas: ${this.hasTools ? '✓' : '✗'}`,
+      `Casco: ${this.hasHelmet ? '✓' : '✗'}`,
       `Cuerda: ${this.hasTether ? '✓' : '✗'}`,
+      `Herramientas: ${this.hasTools ? '✓' : '✗'}`,
     ]);
   }
 
@@ -565,11 +567,20 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // OBJETOS INTERACTIVOS
+  // CREAR OBJETOS INTERACTIVOS
   // ====================================================
 
   private createInteractionObjects() {
 
+    // ROSA: CASCO
+    this.helmetMarker = this.createPickupMarker(
+      HELMET_POSITION.x,
+      HELMET_POSITION.y,
+      'CASCO',
+      0xff4b9b,
+    );
+
+    // NARANJA: HERRAMIENTAS
     this.toolsMarker = this.createPickupMarker(
       TOOLS_POSITION.x,
       TOOLS_POSITION.y,
@@ -577,18 +588,20 @@ export class ShipInteriorScene extends Phaser.Scene {
       0xffc94a,
     );
 
+    // ROJO: CUERDA
     this.tetherMarker = this.createPickupMarker(
       TETHER_POSITION.x,
       TETHER_POSITION.y,
       'CUERDA',
-      0x55d9ff,
+      0xff5555,
     );
 
+    // AZUL: SALIDA
     this.exitMarker = this.createPickupMarker(
       EXIT_POSITION.x,
       EXIT_POSITION.y,
       'SALIDA',
-      0x65edab,
+      0x55aaff,
     );
   }
 
@@ -647,7 +660,6 @@ export class ShipInteriorScene extends Phaser.Scene {
 
     container.setDepth(8);
 
-    // ANIMACIÓN DE PULSACIÓN
     this.tweens.add({
       targets: ring,
       scale: 1.35,
@@ -662,7 +674,7 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // ANIMACIÓN DE RECOGIDA
+  // RECOGER OBJETOS
   // ====================================================
 
   private collectObject(
@@ -703,14 +715,13 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // SISTEMA DE INTERACCIONES
+  // COMPROBAR DISTANCIAS
   // ====================================================
 
   private checkInteractions() {
 
-    if (this.isCollecting) return;
+    if (this.isCollecting || this.isExiting) return;
 
-    // Mantener los mensajes de recogida durante su duración.
     if (this.time.now < this.feedbackUntil) {
 
       this.interactionHint.setText(
@@ -726,6 +737,13 @@ export class ShipInteriorScene extends Phaser.Scene {
 
     const px = this.player.x;
     const py = this.player.y;
+
+    const distanceToHelmet = Phaser.Math.Distance.Between(
+      px,
+      py,
+      HELMET_POSITION.x,
+      HELMET_POSITION.y,
+    );
 
     const distanceToTools = Phaser.Math.Distance.Between(
       px,
@@ -750,15 +768,22 @@ export class ShipInteriorScene extends Phaser.Scene {
 
     this.activeInteraction = null;
 
-    // HERRAMIENTAS
+    // CASCO
     if (
+      !this.hasHelmet &&
+      this.helmetMarker.visible &&
+      distanceToHelmet < INTERACTION_DISTANCE
+    ) {
+      this.activeInteraction = 'helmet';
+    }
+
+    // HERRAMIENTAS
+    else if (
       !this.hasTools &&
       this.toolsMarker.visible &&
       distanceToTools < INTERACTION_DISTANCE
     ) {
-
       this.activeInteraction = 'tools';
-
     }
 
     // CUERDA
@@ -767,53 +792,38 @@ export class ShipInteriorScene extends Phaser.Scene {
       this.tetherMarker.visible &&
       distanceToTether < INTERACTION_DISTANCE
     ) {
-
       this.activeInteraction = 'tether';
-
     }
 
-    // PUERTA
+    // SALIDA
     else if (
-      distanceToExit < INTERACTION_DISTANCE + 10
+      distanceToExit < INTERACTION_DISTANCE
     ) {
-
       this.activeInteraction = 'exit';
-
     }
 
-    // MOSTRAR NOTIFICACIONES
+    // NOTIFICACIONES
     switch (this.activeInteraction) {
 
+      case 'helmet':
+        this.showHint('[E] RECOGER CASCO');
+        break;
+
       case 'tools':
-
-        this.showHint(
-          '[E] RECOGER HERRAMIENTAS',
-        );
-
+        this.showHint('[E] RECOGER HERRAMIENTAS');
         break;
 
       case 'tether':
-
-        this.showHint(
-          '[E] RECOGER CUERDA',
-        );
-
+        this.showHint('[E] RECOGER CUERDA');
         break;
 
       case 'exit':
-
-        this.showHint(
-          '[E] SALIR DE LA NAVE',
-        );
-
+        this.showHint('[E] ABRIR COMPUERTA Y SALIR');
         break;
 
       default:
-
         this.interactionHint.setVisible(false);
-
         this.hintBackground.setVisible(false);
-
         break;
     }
   }
@@ -824,7 +834,25 @@ export class ShipInteriorScene extends Phaser.Scene {
 
   private interact() {
 
+    if (this.isCollecting || this.isExiting) return;
+
     switch (this.activeInteraction) {
+
+      case 'helmet':
+
+        this.collectObject(
+          this.helmetMarker,
+          () => {
+
+            this.hasHelmet = true;
+
+            this.updateInventoryUI();
+
+            this.showMessage('✓ CASCO RECOGIDO');
+          },
+        );
+
+        break;
 
       case 'tools':
 
@@ -836,9 +864,7 @@ export class ShipInteriorScene extends Phaser.Scene {
 
             this.updateInventoryUI();
 
-            this.showMessage(
-              '✓ HERRAMIENTAS RECOGIDAS',
-            );
+            this.showMessage('✓ HERRAMIENTAS RECOGIDAS');
           },
         );
 
@@ -854,9 +880,7 @@ export class ShipInteriorScene extends Phaser.Scene {
 
             this.updateInventoryUI();
 
-            this.showMessage(
-              '✓ CUERDA DE SEGURIDAD RECOGIDA',
-            );
+            this.showMessage('✓ CUERDA DE SEGURIDAD RECOGIDA');
           },
         );
 
@@ -864,11 +888,11 @@ export class ShipInteriorScene extends Phaser.Scene {
 
       case 'exit':
 
+        this.isExiting = true;
+
         this.activeInteraction = null;
 
-        this.showMessage(
-          'ABRIENDO COMPUERTA...',
-        );
+        this.showMessage('ABRIENDO COMPUERTA...');
 
         this.time.delayedCall(700, () => {
           this.exitShip();
@@ -879,29 +903,26 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // SALIR DE LA NAVE
+  // TRANSICIÓN AL EXTERIOR
   // ====================================================
 
   private exitShip() {
 
-    this.scene.start(
-      EXTERIOR_SCENE_KEY,
-      {
-        hasTools: this.hasTools,
-        hasTether: this.hasTether,
-      },
-    );
-  }
+  this.scene.start('exterior-scene', {
+    hasHelmet: this.hasHelmet,
+    hasTools: this.hasTools,
+    hasTether: this.hasTether,
+  });
 
+}
   // ====================================================
-  // ESTRELLAS Y AMBIENTE ESPACIAL
+  // ANIMACIÓN DEL ESPACIO
+  // ESTRELLAS: DERECHA -> IZQUIERDA
   // ====================================================
 
   private createAmbientEffects() {
 
-    // ZONAS NEGRAS EXTERIORES DEL CASCO.
-    // Se evitan las zonas ocupadas por la nave.
-
+    // Solo se dibujan en las zonas exteriores negras.
     const zones = [
       // Lateral izquierdo
       {
@@ -919,7 +940,7 @@ export class ShipInteriorScene extends Phaser.Scene {
         height: 465,
       },
 
-      // Espacio inferior izquierdo
+      // Zona inferior izquierda
       {
         x: 100,
         y: 420,
@@ -927,7 +948,7 @@ export class ShipInteriorScene extends Phaser.Scene {
         height: 75,
       },
 
-      // Espacio inferior derecho
+      // Zona inferior derecha
       {
         x: 540,
         y: 420,
@@ -940,11 +961,6 @@ export class ShipInteriorScene extends Phaser.Scene {
 
       const zone = Phaser.Utils.Array.GetRandom(zones);
 
-      const x = Phaser.Math.Between(
-        zone.x,
-        zone.x + zone.width,
-      );
-
       const y = Phaser.Math.Between(
         zone.y,
         zone.y + zone.height,
@@ -955,8 +971,9 @@ export class ShipInteriorScene extends Phaser.Scene {
         1.8,
       );
 
+      // Todas comienzan a la derecha de su zona.
       const star = this.add.circle(
-        x,
+        zone.x + zone.width,
         y,
         size,
         0xffffff,
@@ -967,23 +984,35 @@ export class ShipInteriorScene extends Phaser.Scene {
 
       this.ambientStars.push(star);
 
-      // DESPLAZAMIENTO DE ESTRELLAS
+      // MOVIMIENTO DE DERECHA A IZQUIERDA
       this.tweens.add({
         targets: star,
 
-        x: zone.x + zone.width,
+        x: zone.x,
 
         duration: Phaser.Math.Between(
-          5000,
-          12000,
+          4000,
+          10000,
         ),
 
         repeat: -1,
 
         ease: 'Linear',
+
+        onRepeat: () => {
+
+          // Reiniciar al extremo derecho.
+          star.x = zone.x + zone.width;
+
+          // Variar la altura en cada recorrido.
+          star.y = Phaser.Math.Between(
+            zone.y,
+            zone.y + zone.height,
+          );
+        },
       });
 
-      // PARPADEO SUAVE
+      // PARPADEO
       this.tweens.add({
         targets: star,
         alpha: 0.2,
@@ -1042,7 +1071,7 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // COLISIONES
+  // CREAR COLISIONES
   // ====================================================
 
   private createObstacles() {
@@ -1116,7 +1145,7 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // MOVIMIENTO CON GRAVEDAD CERO
+  // MOVIMIENTO EN GRAVEDAD CERO
   // ====================================================
 
   private updateMovement() {
@@ -1128,7 +1157,6 @@ export class ShipInteriorScene extends Phaser.Scene {
         document.activeElement,
       );
 
-    // Si el juego pierde el foco, no continuar acelerando.
     if (!this.keys || !focused) {
 
       body.setAcceleration(0, 0);
@@ -1161,8 +1189,8 @@ export class ShipInteriorScene extends Phaser.Scene {
       vertical,
     ).normalize();
 
-    // No reiniciar la velocidad.
-    // La inercia conserva el movimiento al soltar las teclas.
+    // Aceleración gradual.
+    // Al soltar las teclas se conserva la inercia.
 
     body.setAcceleration(
       direction.x * ACCELERATION,
@@ -1171,7 +1199,7 @@ export class ShipInteriorScene extends Phaser.Scene {
   }
 
   // ====================================================
-  // REDIMENSIONAMIENTO
+  // REDIMENSIONAR CÁMARA
   // ====================================================
 
   private resizeWorld(gameSize: Phaser.Structs.Size) {
@@ -1207,10 +1235,10 @@ export class ShipInteriorScene extends Phaser.Scene {
 
   update() {
 
-    // Movimiento
+    // Movimiento del astronauta
     this.updateMovement();
 
-    // Comprobar objetos cercanos
+    // Detectar objetos cercanos
     this.checkInteractions();
 
     // Detectar tecla E
