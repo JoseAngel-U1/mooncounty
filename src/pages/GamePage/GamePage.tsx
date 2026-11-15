@@ -1,7 +1,7 @@
 import { Navigate, useParams } from 'react-router-dom';
 import NavigationButton from '../../components/shared/NavigationButton/NavigationButton';
 import PhaserGame from '../../components/shared/PhaserGame/PhaserGame';
-import { getLevelById } from '../../game/levels/levels';
+import { getLevelById } from '../../game/levels/registry';
 import NotFoundPage from '../NotFoundPage/NotFoundPage';
 import './GamePage.css';
 

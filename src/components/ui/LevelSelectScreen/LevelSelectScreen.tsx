@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { levels } from '../../../game/levels/levels';
-import type { AvailableLevel } from '../../../game/levels/levels';
+import { levels } from '../../../game/levels/registry';
+import type { AvailableLevel } from '../../../game/levels/registry';
 import LevelCard from '../LevelCard/LevelCard';
 import NavigationButton from '../../shared/NavigationButton/NavigationButton';
 import './LevelSelectScreen.css';

@@ -22,7 +22,7 @@ const levelRegistry: Readonly<Record<string, LevelDefinition>> = {
     description: 'Tu punto de partida. Explora el escenario provisional y familiarízate con los controles.',
     image: '/assets/earth.svg',
     status: 'available',
-    sceneKey: 'exploration',
+    sceneKey: 'earth',
   },
   moon: {
     title: 'Luna',

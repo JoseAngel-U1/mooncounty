@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-11-14 — Escena independiente de Tierra
+- Creada `src/game/levels/earth/EarthScene.ts`, que extiende ExplorationScene y usa la clave `earth`.
+- ExplorationScene se mantiene como escena base reutilizable en `src/game/scenes/` y ahora recibe su clave por constructor, sin duplicar movimiento, cámara ni límites.
+- Renombrado `src/game/levels/levels.ts` a `src/game/levels/registry.ts` y actualizadas las importaciones de GamePage, LevelSelectScreen y LevelCard. sceneRegistry asocia `earth` con EarthScene.
+- Actualizados AGENTS.md y D-20 con la convención general: escenas base en `game/scenes/`, lógica por nivel en `game/levels/{levelId}/` y registro en `game/levels/registry.ts`.
+- Sin NPC, misiones, objetos, colisiones, mapa definitivo, cambios visuales ni modificaciones a otros niveles.
+- Verificación por revisión de imports y HTTP 200 en el servidor de desarrollo existente. No se ejecutó build ni equivalente; validación visual e interactiva pendiente.
+
 ## 2026-11-14 — Declaraciones Vite para importaciones CSS
 - Movido vite-env.d.ts de la raíz a src/vite-env.d.ts: tsconfig.app.json incluye únicamente src y dejaba fuera la declaración anterior.
 - Conservada la referencia a vite/client, que incluye declaraciones para '*.css'. Importaciones CSS normales y opciones estrictas de TypeScript sin cambios.

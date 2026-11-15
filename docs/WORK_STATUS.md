@@ -1,7 +1,7 @@
 # WORK_STATUS — MoonCounty
 
 **Última actualización:** 2026-11-14
-**Estado:** refactorización arquitectónica de Fase 1 con React Router y componentes organizados en ui/shared. Validación visual pendiente y build de los cambios actuales pendiente de autorización explícita.
+**Estado:** escena independiente de Tierra preparada sobre la base reutilizable de Fase 1, sin nuevas mecánicas. Validación visual pendiente y build de los cambios actuales pendiente de autorización explícita.
 **Fase activa:** Fase 1 — Integración Phaser. No avanzar a Fase 2 sin autorización.
 
 ## Completado
@@ -9,9 +9,10 @@
 - Pantalla de inicio React a ventana completa: título MoonCounty, estrellas CSS, superficie lunar e ilustraciones SVG pixel art de astronauta, módulo y cohete. Botón INICIAR accesible por teclado; estilos separados en StartScreen.css.
 - Navegación con React Router 7.18.5: `/` → `/levels` → `/game/:levelId`, con regreso al menú/inicio y ruta `*`. Eliminado el estado manual de navegación de App.
 - HomePage, LevelSelectPage, GamePage y NotFoundPage en carpetas propias con CSS; MainLayout usa Outlet. Componentes reutilizables migrados a carpetas individuales sin duplicar código. NavigationButton centraliza los botones de retorno ya existentes y usa useNavigate.
-- LevelSelectScreen genera las tarjetas LevelCard desde `src/game/levels/levels.ts`. Tierra disponible con clave `exploration`; Luna bloqueada con `sceneKey: null`, sin implementación lunar. Imágenes SVG con rutas absolutas para funcionar en URLs anidadas.
+- LevelSelectScreen genera las tarjetas LevelCard desde `src/game/levels/registry.ts`. Tierra disponible con clave `earth`; Luna bloqueada con `sceneKey: null`, sin implementación lunar. Imágenes SVG con rutas absolutas para funcionar en URLs anidadas.
 - GamePage resuelve levelId desde la URL: Tierra monta Phaser, Luna redirige a `/levels` con replace e IDs desconocidos muestran NotFoundPage. Los dos últimos casos no crean Phaser.
-- `src/game/scenes/sceneRegistry.ts` relaciona claves con constructores reales; `src/game/createGame.ts` conserva la configuración del motor. PhaserGame solo gestiona contenedor, foco y ciclo de vida. ExplorationScene fue trasladada sin cambios de lógica.
+- `src/game/scenes/sceneRegistry.ts` relaciona claves con constructores reales; `src/game/createGame.ts` conserva la configuración del motor. PhaserGame solo gestiona contenedor, foco y ciclo de vida.
+- Organización por nivel: ExplorationScene queda como escena base reutilizable en `src/game/scenes/` y recibe la clave de escena; `src/game/levels/earth/EarthScene.ts` la extiende con la clave `earth`, conservando escenario provisional, WASD/flechas, cámara y límites. `src/game/levels/registry.ts` centraliza los niveles. Sin NPC, misiones, objetos, colisiones ni mapa definitivo.
 - Estilos originales de portada, menú y tarjetas conservados. Estilos de canvas y botones extraídos de global.css a sus componentes; estilos del contenedor del juego en GamePage.css. Global.css contiene únicamente reset y estilos globales.
 - El contenedor del juego recibe foco automáticamente. El menú enfoca su encabezado al entrar y admite navegación por teclado; las tarjetas bloqueadas tienen botón deshabilitado.
 - Requisitos acordados de la misión 1 documentados.
@@ -38,8 +39,8 @@
 Validar la Fase 1 implementada. La Fase 2 requiere autorización del usuario; no implementar aún mapa con obstáculos ni objetos de misión.
 
 ## Extensión del registro de niveles
-- Agregar metadatos en `src/game/levels/levels.ts`; la clave del registro se convierte en ID único y React genera la tarjeta automáticamente. GamePage usa getLevelById para resolver la URL.
-- Para un nivel disponible, crear su clase real en `src/game/scenes/` y registrarla en `src/game/scenes/sceneRegistry.ts` usando su clave Phaser y referenciarla con `sceneKey`. El tipo SceneKey deriva de ese registro.
+- Agregar metadatos en `src/game/levels/registry.ts`; la clave del registro se convierte en ID único y React genera la tarjeta automáticamente. GamePage usa getLevelById para resolver la URL.
+- Para un nivel disponible, crear su escena y configuración en `src/game/levels/{levelId}/`, reutilizando las escenas base de `src/game/scenes/` cuando sea posible. Registrarla en `src/game/scenes/sceneRegistry.ts` usando su clave Phaser y referenciarla con `sceneKey`. El tipo SceneKey deriva de ese registro.
 - Para un destino no implementado, usar `status: 'locked'` y `sceneKey: null`. No crear escenas ficticias.
 - No es necesario modificar LevelSelectScreen, LevelCard ni las rutas para agregar entradas. La creación de nuevos niveles/escenas sigue requiriendo aprobación.
 
@@ -49,6 +50,7 @@ Validar la Fase 1 implementada. La Fase 2 requiere autorización del usuario; no
 - La misión 2 no está definida; no inventar su contenido.
 
 ## Registro de verificación
+- Escena de Tierra (2026-11-14): creada `src/game/levels/earth/EarthScene.ts` extendiendo ExplorationScene, que ahora recibe la clave de escena y permanece como base reutilizable. `src/game/levels/registry.ts` sustituye a levels.ts con la clave `earth`; sceneRegistry asocia `earth` con EarthScene y las importaciones de GamePage, LevelSelectScreen y LevelCard apuntan al nuevo registro. Revisión de imports sin referencias a `levels.ts` ni a la clave `exploration`. Comprobación en el servidor de desarrollo existente: HTTP 200 de los módulos nuevos y actualizados. No se ejecutó build, tsc ni equivalente; verificación de compilación y prueba visual/interactiva pendientes de autorización.
 - Importaciones CSS (2026-11-14): movido vite-env.d.ts desde la raíz a src/vite-env.d.ts, conservando la referencia a vite/client. tsconfig.app.json ya incluye src; el archivo anterior quedaba fuera de su alcance. Verificado que vite/client declara el módulo '*.css' y que las importaciones siguen siendo normales. No se encontraron @ts-ignore ni @ts-expect-error en el código propio revisado. Sin cambios de configuración TypeScript ni componentes. Verificación por inspección; no se ejecutó compilación ni comprobación con tsc, pendiente de autorización.
 - Separación ui/shared (2026-11-14): revisadas importaciones y ausencia de referencias antiguas en src. El servidor de desarrollo existente devuelve HTTP 200 para los cinco componentes migrados, sus cinco CSS y las cuatro páginas consumidoras. No se ejecutó compilación; build pendiente de autorización. Prueba visual/interactiva pendiente en navegador.
 - Refactorización arquitectónica (2026-11-14): react-router-dom 7.18.5 instalado; npm informó cero vulnerabilidades. Revisión de imports, eliminación del estado manual, guardas de GamePage y limpieza de Phaser. HTTP 200 en el servidor existente para las rutas directas, módulos migrados y recursos. Comprobación en memoria del registro servido por Vite: Tierra disponible, Luna bloqueada sin escena, IDs desconocidos/ausentes rechazados e imágenes accesibles desde URLs anidadas. Esto no sustituye la prueba visual ni la navegación interactiva. No se ejecutó build, tsc ni equivalente; build pendiente de autorización.

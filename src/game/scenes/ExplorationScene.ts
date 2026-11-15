@@ -4,13 +4,14 @@ const SPEED = 220;
 
 type MovementKeys = Record<'up' | 'down' | 'left' | 'right' | 'w' | 'a' | 's' | 'd', Phaser.Input.Keyboard.Key>;
 
+// Escena base reutilizable: recibe la clave de la escena específica del nivel.
 export class ExplorationScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
   private keys?: MovementKeys;
   private ground!: Phaser.GameObjects.Graphics;
 
-  constructor() {
-    super('exploration');
+  constructor(sceneKey: string) {
+    super(sceneKey);
   }
 
   create() {

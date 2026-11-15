@@ -1,4 +1,4 @@
-import type { AvailableLevel, Level } from '../../../game/levels/levels';
+import type { AvailableLevel, Level } from '../../../game/levels/registry';
 import './LevelCard.css';
 
 type LevelCardProps = {
