@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-11-15 — Auditoría y consolidación documental
+- Auditoría integral de coherencia entre los nueve documentos Markdown y el código en `dac3880`.
+- Delimitación estricta entre el alcance implementado en Tierra (D-35: panel `LaunchPanel` provisional con reintentos ilimitados) y los requisitos futuros aprobados (D-10 combustible, D-11 límite de 3 errores y bloqueo, D-12 modales de consecuencias y D-14 «Continuar» definitivo).
+- Incorporación de notas explicativas de vigencia en `docs/DECISIONS.md` para clarificar decisiones ampliadas o sustituidas (D-21, D-26, D-27, D-28, D-32, D-36) sin alterar el texto histórico.
+- Actualización de `docs/ROADMAP.md` y `docs/WORK_STATUS.md`: registro del estado real de Fases 0–5, primer commit (`e15fb7c`) y remoto `origin` constatados, exclusión obligatoria de F3 para producción (D-23) y delimitación de pruebas/pendientes de compilación.
+- Documentación en `docs/MISSION_01.md` de discrepancias textuales de diálogos en código (MI-04) y puntos de validación visual pendientes (PV-01 confirmado, PV-02, PV-03).
+- Actualización de `README.md`, `src/components/README.md` y `src/game/README.md`: incorporación de `LaunchPanel` en `ui/`, submódulos de interacciones, elevador, tripulación, sprites, estado y puente de Phaser en `src/game/`, y alineación general del estado del proyecto.
+
 ## 2026-11-15 — Estabilidad de dirección diagonal de tripulación
 - Diagnóstico: el historial con `Math.hypot` y el muestreo mantienen las posiciones y distancias; la comparación estricta `abs(dy) > abs(dx)` alternaba la dirección visual por redondeo en diagonales a 45°. Reproducción: 208 cambios de animación innecesarios en cuatro recorridos diagonales, sin bloqueo de posición reproducido.
 - Ajuste localizado en `earthCrew.ts`: tolerancia de 0,000001 px para comparar componentes al elegir eje visual; empate conserva preferencia lateral. No cambia los recursos ni definiciones de animación, movimiento, historial, posiciones, distancias, colisiones o elevador.

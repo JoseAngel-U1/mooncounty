@@ -3,11 +3,16 @@
 ## Propósito
 Completar preparativos de una nave mediante exploración, recolección, interacción con un ingeniero y decisiones que producen éxito o fracaso.
 
+## Alcance vigente y validación
+- Implementado: flujo de Tierra hasta el código y el panel de lanzamiento provisional D-35, con NPC, traje, coordenadas, elevador y dos acompañantes.
+- Requisitos futuros aprobados: inventario inferior, combustible, límite de tres códigos incorrectos, fallo, reinicio desde modal y «Continuar» definitivo. No se presentan como funcionalidades actuales.
+- La existencia de código no equivale a validación completa. Las pruebas y sus límites se registran en WORK_STATUS; build actual pendiente de autorización. El proyecto no está declarado listo para producción.
+
 ## Mundo y controles
 - Un mapa 2D pequeño de vista superior, con astronauta, traje, coordinador, punto de coordenadas, ingeniero y nave. El punto de coordenadas ocupa el rectángulo `(221, 431, 45, 41)` del mapa original.
-- WASD o flechas: movimiento en cuatro direcciones.
+- WASD o flechas: movimiento horizontal/vertical y combinaciones diagonales, con velocidad normalizada de 220 px/s.
 - Cerca de elementos interactivos aparece «Presiona E»; E activa la interacción.
-- Los objetos recogibles pasan directamente al inventario inferior.
+- Requisito futuro: los objetos recogibles pasarán directamente al inventario inferior. Actualmente las recogidas actualizan el estado en memoria, sin inventario visible.
 - Paredes y obstáculos sólidos no se atraviesan (fase de mapa).
 
 ## Tripulación (D-36)
@@ -16,6 +21,7 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - Los acompañantes siguen el historial del jugador a 65/130 px de recorrido, no la distancia en línea recta: conservan las esquinas y reproducen Idle al detenerse. No bloquean al jugador ni activan E.
 - Durante el elevador siguen el trayecto vertical y salen por el mismo recorrido al caminar en el destino; mientras mantienen la separación, pueden quedar dentro del hueco hasta que el jugador avance.
 - F3 y el modal de lanzamiento suspenden el seguimiento y dejan a los acompañantes en reposo. El estado de misión sigue perteneciendo únicamente a EarthScene.
+- La comparación de ejes incluye una tolerancia de 0,000001 px para evitar alternancia lateral/vertical por redondeo en diagonales. El usuario confirmó visualmente que la corrección de esa alternancia funciona; no certifica todos los escenarios ni bloqueos de posición no reproducidos.
 
 ## Flujo de misión
 ### Ampliación autorizada: traje espacial (2026-11-15)
@@ -32,9 +38,9 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - El ingeniero exige traje, solicitud del coordinador y coordenadas. Los diálogos fuera de orden indican el siguiente paso requerido.
 - Al entregar las coordenadas, `hasCoordinates` pasa a false y `hasTrajectoryData` a true. La entrega es única; las repeticiones remiten al coordinador o a la nave según el progreso.
 - Los datos de trayectoria se conservan como registro de obtención tras recibir el código. `launchCode !== null` registra que el coordinador ya los recibió.
-- Estado inicial por sesión: `hasSpacesuit = false`, `coordinatesRequested = false`, `hasCoordinates = false`, `hasTrajectoryData = false`, `launchCode = null`.
+- Estado inicial por sesión: `hasSpacesuit = false`, `coordinatesRequested = false`, `hasCoordinates = false`, `hasTrajectoryData = false`, `launchCode = null`, `missionCompleted = false`.
 - El ingeniero está dentro de `hangar-norte`, que termina en Y=150. Se permite hablar desde el pasillo sur: `(164, 180)` está libre para el cuerpo 22×31 y a 72 px del NPC (radio 90). Posición y colisiones no se modifican.
-- El usuario confirmó visualmente el funcionamiento del ingeniero y la interacción E. El flujo hasta obtener el código dispone ya de recogida real de coordenadas (D-29); la nave sigue pendiente.
+- El usuario confirmó visualmente el funcionamiento del ingeniero y la interacción E. El flujo hasta obtener el código dispone de recogida real de coordenadas (D-29) y panel de nave provisional (D-35); siguen pendientes combustible, límite de intentos y consecuencias definitivas.
 
 ### Sprites propios de los NPC (D-33)
 - Ingeniero: `NPC_Staff_v1`; coordinador: `NPC_Staff_v2`. Siluetas idénticas entre variantes; solo cambia la paleta (el coordinador añade arnés naranja y visor azul).
@@ -59,7 +65,7 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - Zona superior `(1247, 395, 148, 40)` e inferior `(1247, 675, 148, 40)`. La cabina ocupa 22 px centrados en X=1321 (X 1310–1332); la activación automática sin E exige estar en la zona y en la columna. Como las zonas son más anchas que la cabina, no se ajusta X: si el jugador entra en la zona fuera de la columna, no se activa hasta que camine a ella.
 - Traslado exclusivamente vertical con X constante: subida Y=690→415 con `walkUp`; bajada Y=415→690 con `walkDown`. Se conserva la X de entrada (p. ej. 1315) durante todo el recorrido. Movimiento e interacciones bloqueados y física suspendida; al terminar se restauran control, física y reposo.
 - Solo la colisión del hueco `elebador` `(1246, 440, 162, 229)` se ignora durante la comprobación del recorrido y del traslado; no se modifica ni elimina permanentemente. El piso superior solo es accesible mediante el elevador.
-- La zona de llegada queda bloqueada hasta abandonarla por completo, lo que evita rebotes. F3 interrumpe el traslado sin bloquear al jugador.
+- La zona de llegada queda bloqueada hasta abandonarla por completo, lo que evita rebotes. F3 interrumpe el tween y restaura la física. El resultado de interrumpir dentro del hueco está pendiente de validación; no se garantiza aún que el jugador pueda salir de cualquier posición de interrupción ni se afirma un fallo reproducido.
 
 ### Flujo definitivo
 1. Recoger traje espacial.
@@ -79,9 +85,9 @@ Las reglas futuras de combustible, intentos y consecuencias permanecen documenta
 - Con código, E abre un modal React centrado y semitransparente sobre Phaser. Campo de exactamente 4 dígitos y botón «Autorizar lanzamiento»; acepta solo dígitos y limpia el error al editar. La comprobación usa `EARTH_LAUNCH_CODE`/`isEarthLaunchCode()` de `earthMissionConfig.ts`, sin duplicar `4826`.
 - Código erróneo: mensaje de error y nuevos intentos. En esta etapa no se aplican el límite de tres intentos ni el fallo por falta de combustible; esas reglas siguen pendientes.
 - Código correcto: `missionCompleted = true` y modal con «¡Misión Tierra completada!», sin animación de despegue. Cerrar el formulario no pierde código ni progreso; reabrir sin completar vuelve al formulario y, tras completar, muestra el mensaje final.
-- Mientras el modal está abierto se bloquean movimiento e interacciones; al cerrarlo se restauran el control y el foco del juego. El editor F3 permanece independiente y las colisiones no cambian.
+- Mientras el modal está abierto se bloquean movimiento e interacciones; al cerrarlo se restauran el control y el foco del juego. Hay foco inicial en la entrada, pero no una trampa completa de foco con Tab/Shift+Tab. La lógica del editor F3 es independiente; su activación mientras la entrada del modal conserva el foco requiere validación específica. Las colisiones no se modifican por abrir o cerrar el panel.
 
-## Reglas y consecuencias
+## Reglas y consecuencias futuras aprobadas — pendientes de implementación
 | Condición | Resultado |
 |---|---|
 | Código incorrecto, primer intento | Aviso; quedan 2 intentos |
@@ -92,17 +98,27 @@ Las reglas futuras de combustible, intentos y consecuencias permanecen documenta
 
 **Importante:** no deshabilitar «Intentar despegar» solo porque falta combustible. La falta debe producir una consecuencia cuando el jugador lo intente. La secuencia exacta entre introducir código y confirmar despegue se definirá durante la implementación de la interfaz de nave, conservando estas reglas.
 
-## Modales
+## Modales — alcance actual y futuro
 **Panel de lanzamiento (D-35):** campo de 4 dígitos, botón «Autorizar lanzamiento», error ante código incorrecto y reintentos sin límite en esta etapa. Con el código correcto se muestra «¡Misión Tierra completada!» y una nota de que la segunda misión no está disponible; el cierre restaura el juego. Sin animación de despegue.
-**Fallo:** título «Misión fallida», motivo específico, checklist de lo que faltó o salió mal, breve explicación educativa, botón «Reiniciar misión».
-**Éxito:** título «Misión completada», resumen breve, botón «Continuar». Hasta que exista misión 2, «Continuar» debe mostrar un estado provisional explícito, no navegar a contenido inexistente. El título actual autorizado para esta etapa es «¡Misión Tierra completada!»; el botón «Continuar» definitivo sigue pendiente de definición.
+**Fallo (requisito futuro):** título «Misión fallida», motivo específico, checklist de lo que faltó o salió mal, breve explicación educativa, botón «Reiniciar misión».
+**Éxito definitivo (requisito futuro):** título «Misión completada», resumen breve, botón «Continuar». Hasta que exista misión 2, «Continuar» debe mostrar un estado provisional explícito, no navegar a contenido inexistente. El título actual autorizado para esta etapa es «¡Misión Tierra completada!»; el botón «Continuar» definitivo sigue pendiente de definición.
 
 ## Reinicio
 Al recrear Tierra se restablecen posición, traje, solicitud, coordenadas, datos de trayectoria, código y `missionCompleted`; el punto permite otra recogida tras cumplir los requisitos. La restauración futura de combustible, inventario, intentos y modales se implementará con esas funcionalidades.
 
-## Casos de prueba mínimos
+## Discrepancias de mensajes pendientes de código (MI-04)
+Los requisitos de mensajes y sus expectativas de prueba se conservan. La auditoría no autoriza cambiar el código ni rebajar los requisitos para hacerlos coincidir con los textos actuales de `earthInteractions.ts`.
+
+| Caso | Requisito conservado | Implementación observada | Pendiente |
+|---|---|---|---|
+| Ingeniero antes de la solicitud, con traje | Remitir al coordinador; indicar el siguiente paso requerido. | «Ingeniero: Necesito las coordenadas para poder proporcionarte los datos de trayectoria»; no menciona al coordinador. | Ajustar el mensaje en un paso de código autorizado. |
+| Coordenadas sin solicitud, con traje | Informar qué paso falta. | «Que papeles tan curioses quisas los necesite en algun momento»; no explica la solicitud del coordinador. | Ajustar el mensaje en un paso de código autorizado. |
+| Recogida correcta de coordenadas | «Coordenadas de lanzamiento obtenidas. Entrégalas al ingeniero». | El mensaje carece del punto final dentro del texto: «Coordenadas de lanzamiento obtenidas. Entrégalas al ingeniero». | Alinear la puntuación del mensaje requerido; la actualización de estado sí está implementada. |
+
+## Casos de prueba del alcance implementado
+Esta lista define comprobaciones; no indica que todas estén superadas. Las discrepancias MI-04 siguen abiertas y las pruebas históricas están delimitadas en WORK_STATUS.
 - Hablar con ambos NPC sin traje: no avanzar.
-- Hablar con ingeniero antes de la solicitud: remitir al coordinador.
+- Hablar con ingeniero antes de la solicitud: remitir al coordinador (**mensaje pendiente de código, MI-04**).
 - Solicitar coordenadas al coordinador una sola vez.
 - Sin coordenadas: ingeniero no entrega datos y coordinador no entrega código.
 - Con coordenadas: ingeniero las recibe y entrega datos una sola vez.
@@ -114,11 +130,12 @@ Al recrear Tierra se restablecen posición, traje, solicitud, coordenadas, datos
 - Cerrar el formulario o pulsar Escape: el código obtenido y el progreso se conservan; se puede reabrir.
 - Código correcto: «¡Misión Tierra completada!», `missionCompleted = true`, sin animación.
 - Con el modal abierto: movimiento e interacciones bloqueados; al cerrar se restauran el control y el foco del juego.
-- Reabrir tras completar: muestra el mensaje final. F3 sigue abriendo/cerrando el editor y las 31 colisiones no cambian.
+- Reabrir tras completar: muestra el mensaje final. Comprobar F3 antes/después del modal y que las 31 colisiones no cambian; el atajo mientras la entrada conserva el foco está pendiente de validación específica.
 - Acercarse al ingeniero desde `(164, 180)` y pulsar E, sin entrar en la colisión del hangar.
-- Recogida sin traje o sin solicitud: no obtener coordenadas; con ambos requisitos: obtenerlas y mostrar el mensaje exacto.
+- Recogida sin traje o sin solicitud: no obtener coordenadas; con ambos requisitos: obtenerlas y mostrar el mensaje exacto (**mensajes pendientes de alineación, MI-04**).
 - Repetir antes y después de entregarlas al ingeniero y tras recibir el código: sin nueva recogida ni pérdida de progreso.
 - Comprobar aviso, alcance de 60 px y suspensión con F3/sin foco en navegador.
+## Casos de aceptación futuros — no ejecutables con el alcance actual
 - Recoger combustible: aparece en inventario.
 - Intentar despegar sin combustible: fallo inmediato y modal.
 - Código incorrecto 1 y 2: aviso y contador correcto.

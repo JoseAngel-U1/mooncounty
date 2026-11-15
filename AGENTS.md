@@ -20,7 +20,7 @@ Si hay conflicto, detenerse y preguntar antes de modificar una decisión confirm
 
 ## Organización frontend obligatoria
 - Cada página debe vivir en `src/pages/NombrePage/NombrePage.tsx` con su propio `NombrePage.css` en la misma carpeta.
-- Separar obligatoriamente `src/components/` en `ui/` y `shared/`: `ui/` contiene los componentes visuales específicos de MoonCounty (actualmente StartScreen, LevelSelectScreen y LevelCard); `shared/` contiene componentes genéricos o reutilizables entre páginas y funcionalidades (actualmente PhaserGame y NavigationButton).
+- Separar obligatoriamente `src/components/` en `ui/` y `shared/`: `ui/` contiene los componentes visuales específicos de MoonCounty (actualmente StartScreen, LevelSelectScreen, LevelCard y LaunchPanel); `shared/` contiene componentes genéricos o reutilizables entre páginas y funcionalidades (actualmente PhaserGame y NavigationButton).
 - Cada componente debe vivir en `src/components/ui/NombreComponente/` o `src/components/shared/NombreComponente/`, con sus propios archivos `NombreComponente.tsx` y `NombreComponente.css` juntos. No agrupar estilos de componentes en una carpeta general.
 - Migrar componentes existentes sin duplicar implementación y actualizar sus importaciones. No crear componentes ficticios ni carpetas vacías para funcionalidades futuras; inventarios o modales específicos pertenecerán a `ui/` únicamente cuando se autorice su implementación.
 - Los layouts viven en `src/layouts/NombreLayout/` con archivos TSX y CSS propios. `MainLayout` debe componer las páginas mediante `Outlet` de React Router.
@@ -37,7 +37,7 @@ Si hay conflicto, detenerse y preguntar antes de modificar una decisión confirm
 - Mantener lógica del juego separada de la presentación React.
 - Evitar duplicar el estado de misión: usar una única fuente de verdad y eventos o callbacks explícitos.
 - Usar nombres claros, TypeScript estricto y componentes pequeños.
-- Validar entradas del código de 4 dígitos; impedir intentos adicionales después del tercero.
+- Validar entradas del código de 4 dígitos. El requisito definitivo D-11 exige bloquear tras tres códigos incorrectos; su implementación sigue pendiente. La etapa provisional D-35 está autorizada con reintentos ilimitados: no añadir el contador ni el bloqueo sin autorización de ese paso.
 - No bloquear el intento de despegue por falta de combustible: el jugador debe poder intentar y fallar.
 - No crear animaciones de despegue, explosión ni fallo: mostrar modal inmediato.
 - No presentar como hechos científicos afirmaciones no verificadas; el contenido educativo debe ser prudente.

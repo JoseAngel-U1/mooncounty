@@ -1,9 +1,28 @@
 # Módulo Phaser
-- `scenes/ExplorationScene.ts`: escena base reutilizable de Fase 1 con mundo delimitado, astronauta, WASD/flechas y cámara. Recibe la clave de la escena desde el nivel que la extiende.
-- `scenes/sceneRegistry.ts`: claves y constructores de escenas implementadas.
-- `levels/registry.ts`: registro tipado de niveles y resolución de identificadores; los bloqueados no tienen escena ficticia.
-- `levels/earth/EarthScene.ts`: escena específica de Tierra. Carga `public/assets/levels/earth/map.png` a escala 1:1, ajusta mundo/cámara a sus dimensiones y aplica un zoom uniforme de cobertura si el viewport supera el mapa; si la imagen no existe, usa la cuadrícula provisional de ExplorationScene. Añade las colisiones estáticas del escenario. Con F3 activa o desactiva un overlay de depuración dibujado en coordenadas del mundo: relleno rojo semitransparente y borde rojo para cada obstáculo, borde y relleno verde para el cuerpo del astronauta y etiquetas con el identificador de cada obstáculo. Las figuras leen `x`, `y`, `width` y `height` de los cuerpos de Arcade y siguen cámara y zoom.
-- `levels/earth/earthCollisions.ts`: rectángulos de colisión del escenario en coordenadas del mundo (mismo sistema que el PNG), con etiqueta por estructura, y la constante `DEBUG_COLLISIONS` como estado inicial del overlay (desactivada por defecto; F3 la alterna en ejecución). La rejilla de suelo transitable y el punto inicial quedan fuera de las colisiones.
-- `createGame.ts`: configuración y creación del motor Phaser, sin dependencia de React.
 
-`src/components/shared/PhaserGame/PhaserGame.tsx` integra el motor en React y limpia el juego al desmontarse. `src/pages/GamePage/GamePage.tsx` valida el nivel de la URL antes de montar el componente. La navegación pertenece exclusivamente a React Router.
+## Escenas base y registro
+- `scenes/ExplorationScene.ts`: escena base reutilizable de exploración con mundo delimitado, astronauta, WASD/flechas, seguimiento de cámara y puntos de extensión para niveles específicos.
+- `scenes/sceneRegistry.ts`: mapeo centralizado entre claves de Phaser y constructores de escenas implementadas (`earth`).
+- `levels/registry.ts`: registro centralizado y tipado de niveles (`earth` disponible, `moon` bloqueado sin escena ficticia); resuelve identificadores desde la URL.
+- `createGame.ts`: configuración y creación del motor Phaser 3, desacoplado de React.
+
+## Sistema de interacciones
+- `interactions/interactiveObject.ts`: contrato tipado para objetos del mundo interactuables mediante proximidad y tecla E.
+- `interactions/ProximityInteractionSystem.ts`: sistema Phaser reutilizable de proximidad; detecta el elemento más cercano, gestiona el aviso «Presiona E», garantiza una acción por pulsación y suspende avisos y acciones sin foco o con F3 activo.
+
+## Nivel Tierra (`levels/earth/`)
+- `EarthScene.ts`: escena principal de Tierra. Carga `public/assets/levels/earth/map.png` a escala 1:1, aplica zoom uniforme de cobertura cuando el viewport supera el mapa, integra las 31 colisiones estáticas, elevador vertical, dos acompañantes de tripulación, NPCs con sprites propios, interacciones del flujo de misión y puente de lanzamiento.
+- `earthCollisions.ts`: 31 rectángulos de colisión sólida del escenario en coordenadas del mapa original y constante `DEBUG_COLLISIONS` (desactivada por defecto).
+- `earthCollisionEditor.ts`: editor de colisiones F3 arrastrable (D-34) con overlay gráfico en coordenadas del mundo. Herramienta exclusiva de desarrollo; su exclusión o deshabilitación completa para producción es un requisito previo a la entrega (AGENTS.md, D-23).
+- `earthElevator.ts`: elevador automático exclusivamente vertical entre Y=690 y Y=415 con columna de activación centrada en X=1321 y X de entrada conservada durante todo el traslado (D-32).
+- `earthCrew.ts`: lógica de seguimiento para dos acompañantes a 65 y 130 px sobre el historial de recorrido, con tolerancia diagonal de 0,000001 px y pausa durante F3 o modales (D-36).
+- `earthCrewSprites.ts`: carga y configuración independiente de texturas y animaciones de tripulación desde `public/assets/characters/tripulante/` a escala 2× (D-37).
+- `earthPlayerSprites.ts`: escala visual 2× (`EARTH_ASTRONAUT_SCALE`), carga de texturas sin casco (`astronauta_sin_casco`) y con casco (`astronauta_con _casco`), y animaciones por dirección.
+- `earthNpcSprites.ts`: carga de frames 32–39 y animación Idle a 8 fps en bucle para ingeniero (`NPC_Staff_v1`) y coordinador (`NPC_Staff_v2`) a escala 2× (D-33).
+- `earthInteractions.ts`: definición de interactivos de Tierra (trajes espaciales, coordinador, punto de coordenadas, ingeniero y nave).
+- `earthMissionConfig.ts`: configuración centralizada del código de lanzamiento (`4826`), longitud requerida (4 dígitos) y función de validación `isEarthLaunchCode()`.
+- `earthMissionState.ts`: tipo y fábrica `createEarthMissionState()` para el estado de misión en memoria por sesión (`hasSpacesuit`, `coordinatesRequested`, `hasCoordinates`, `hasTrajectoryData`, `launchCode`, `missionCompleted`).
+- `earthLaunchPanelBridge.ts`: puente de eventos desacoplado entre Phaser y el modal React `LaunchPanel` (D-35) para abrir/cerrar el panel y gestionar el bloqueo y restauración de movimiento, interacciones y foco.
+
+## Integración con React
+`src/components/shared/PhaserGame/PhaserGame.tsx` integra el ciclo de vida del canvas Phaser en React, garantiza la destrucción al desmontar y previene instancias duplicadas en StrictMode. `src/pages/GamePage/GamePage.tsx` resuelve y valida el nivel desde la URL antes de inicializar Phaser. La navegación entre vistas pertenece exclusivamente a React Router.
