@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2026-11-15 — Estabilidad de dirección diagonal de tripulación
+- Diagnóstico: el historial con `Math.hypot` y el muestreo mantienen las posiciones y distancias; la comparación estricta `abs(dy) > abs(dx)` alternaba la dirección visual por redondeo en diagonales a 45°. Reproducción: 208 cambios de animación innecesarios en cuatro recorridos diagonales, sin bloqueo de posición reproducido.
+- Ajuste localizado en `earthCrew.ts`: tolerancia de 0,000001 px para comparar componentes al elegir eje visual; empate conserva preferencia lateral. No cambia los recursos ni definiciones de animación, movimiento, historial, posiciones, distancias, colisiones o elevador.
+- Verificación con Node directo: ocho direcciones, separaciones 65/130, cambios rápidos, detención/reanudación y muestreo de esquina correctos; cero cambios innecesarios de animación. En Edge: cuatro diagonales por teclado simultáneo con velocidad 220 px/s, movimiento ortogonal, subida/salida del elevador, F3/modal y 31 zonas conservadas; sin excepciones. Confirmación visual del problema reportado pendiente. Sin build ni compilaciones.
+
+## 2026-11-15 — Recursos propios de los acompañantes (D-37)
+- Ambos acompañantes usan `public/assets/characters/tripulante/`, con la misma apariencia. Nuevo `earthCrewSprites.ts` independiente de la configuración del astronauta principal.
+- Idle: archivos 32–47; lateral: 56–63 con flipX; arriba: 64–69; abajo: 70–75. Sitting 48–55 excluido; escala 2×, pixel art y velocidades de animación conservados.
+- Precarga desde EarthScene y selección de recursos en EarthCrew; sin cambios en seguimiento, distancias, posiciones, elevador ni jugador.
+- Verificación directa con Node: 36 texturas y cuatro animaciones con rangos exactos y registro idempotente. Sin build ni compilaciones; revisión visual pendiente.
+
+## 2026-11-15 — Tripulación automática de Tierra (D-36)
+- Nuevo `earthCrew.ts`: dos acompañantes con casco, escala 2×, seguimiento del recorrido real a 65/130 px y animaciones reutilizadas. Historial acotado a 200 px con recorte parcial para evitar saltos iniciales.
+- Integración en `EarthScene`: creación por sesión, seguimiento durante el elevador y pausa en Idle con F3/modal; el modal abierto durante una interacción bloquea también el resto de ese mismo update.
+- Verificación: 32 comprobaciones con dobles de Phaser más regresión del recorte inicial; Edge headless verifica spawn, movimiento con giro, Idle, ausencia de cuerpos, F3, subida y salida del elevador, pausa con modal y 31 zonas conservadas, sin excepciones de ejecución.
+- La prueba inicial usó un bundle temporal de esbuild; la repetición final ejecutó TypeScript mediante Node sin generar artefactos. No se ejecutó build de producción ni tsc. Tipos/build y revisión visual pendientes.
+
 ## 2026-11-15 — Interacción final con la nave y panel de lanzamiento (D-35)
 - Añadida la interacción `nave` en `earthInteractions.ts` sobre la zona `(1274, 39, 70, 137)`, centro `(1309, 107.5)` y radio circunscrito ≈ 76,9 px del sistema de proximidad; sin nueva colisión. Aviso «Presiona E para acceder al panel de lanzamiento»; sin `launchCode` muestra autorización pendiente y no abre nada.
 - Nuevo puente sin Phaser `earthLaunchPanelBridge.ts` y componente `LaunchPanel` en `src/components/ui/` con overlay semitransparente, campo de exactamente 4 dígitos, botón «Autorizar lanzamiento», errores y reintentos, cierre por botón/×/Escape y mensaje «¡Misión Tierra completada!» sin animación.

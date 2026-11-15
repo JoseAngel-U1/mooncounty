@@ -10,6 +10,13 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - Los objetos recogibles pasan directamente al inventario inferior.
 - Paredes y obstáculos sólidos no se atraviesan (fase de mapa).
 
+## Tripulación (D-36)
+- Actualización visual D-37: ambos acompañantes usan `tripulante/NPC_v3_32x{n}.png`, con configuración independiente del jugador. Idle 32–47 (8 fps), lateral 56–63 (flipX), arriba 64–69 y abajo 70–75 (caminar a 10 fps); Sitting 48–55 no se carga. Escala 2× y comportamiento de D-36 conservados.
+- Desde el inicio hay tres astronautas: jugador en `(97,900)` y dos acompañantes con casco, a escala 2×, en fila diagonal dentro del espacio libre al noreste.
+- Los acompañantes siguen el historial del jugador a 65/130 px de recorrido, no la distancia en línea recta: conservan las esquinas y reproducen Idle al detenerse. No bloquean al jugador ni activan E.
+- Durante el elevador siguen el trayecto vertical y salen por el mismo recorrido al caminar en el destino; mientras mantienen la separación, pueden quedar dentro del hueco hasta que el jugador avance.
+- F3 y el modal de lanzamiento suspenden el seguimiento y dejan a los acompañantes en reposo. El estado de misión sigue perteneciendo únicamente a EarthScene.
+
 ## Flujo de misión
 ### Ampliación autorizada: traje espacial (2026-11-15)
 - Al comenzar una sesión de Tierra, `hasSpacesuit = false` y el jugador usa `astronauta_sin_casco`; al recoger el traje cambia a `astronauta_con _casco` (D-27).

@@ -72,6 +72,14 @@
 - Código correcto: marca `missionCompleted` y muestra «¡Misión Tierra completada!», sin animación de despegue. Cerrar el formulario o el modal conserva el progreso: al volver a interactuar sin completar se reabre la entrada y, si ya está completada, el mensaje final. El botón de cierre se etiqueta «Cerrar» e indica que la segunda misión no está disponible; el «Continuar» de D-14/MISSION_01 queda pendiente de definición.
 - Mientras el modal está abierto se bloquean el movimiento y las interacciones de Phaser y el foco pasa al campo de entrada; al cerrar se restauran el control, el foco del juego y las teclas. El editor F3 sigue funcionando con sus 31 colisiones intactas. Sin cambios en elevador, NPC, animaciones, radios ni el resto del flujo de misión.
 
+## Tripulación de Tierra
+- **D-36 (2026-11-15, alcance aprobado por el usuario):** añadir dos acompañantes automáticos desde el inicio, con sprites y animaciones existentes del astronauta con casco a escala 2×. Siguen el recorrido del jugador a 65 y 130 px medidos sobre el historial, respetando los giros. No tienen cuerpos físicos ni interacciones ni estado de misión propio. El jugador conserva spawn y controles; el seguimiento se suspende con F3 y con el panel de lanzamiento abierto.
+- Implementación: `earthCrew.ts`, integrado en `EarthScene`. Historial limitado a 200 px con recorte parcial del segmento antiguo para conservar la distancia del segundo acompañante. Formación inicial en diagonal 39° al noreste del spawn `(97,900)`, en el espacio libre disponible; posiciones aproximadas `(147.5,859.1)` y `(198,818.2)`. Reutiliza Idle y caminar según desplazamiento real.
+- El elevador aporta su recorrido vertical al mismo historial: los acompañantes siguen por el hueco y recuperan la formación en el piso de destino al continuar caminando. No se modifican las colisiones ni el elevador.
+
+## Recursos propios de tripulación
+- **D-37 (2026-11-15, confirmada por el usuario):** ambos acompañantes comparten apariencia y usan exclusivamente `public/assets/characters/tripulante/`. `NPC_v3_32x32.png` corresponde al frame lógico 1 y `NPC_v3_32x75.png` al 44. Idle: archivos 32–47; Sitting: 48–55, excluidos; caminar lateral: 56–63 con flipX; arriba: 64–69; abajo: 70–75. Configuración independiente en `earthCrewSprites.ts`, Idle a 8 fps y caminar a 10 fps en bucle, escala 2× y pixel art conservados. Sustituye únicamente los recursos del jugador usados inicialmente en D-36; seguimiento, posiciones, distancias y elevador se conservan exactamente. El astronauta principal no cambia.
+
 ## Pendientes de definición vigentes
 - Diseño visual y distribución exacta del mapa.
 - Orden de las comprobaciones al interactuar con la nave y cuándo se consume combustible.

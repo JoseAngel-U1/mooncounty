@@ -38,6 +38,11 @@ Entregar una demostración web funcional de la primera misión durante el hackat
 - [ ] Verificar visualmente rutas directas, recargas, Atrás/Adelante y desmontaje repetido en navegador.
 **Estado:** refactorización de Fase 1, sin nuevas misiones ni avance de fase. Build pendiente de autorización explícita.
 
+#### Ampliación autorizada — Tripulación (D-36)
+- [x] Dos acompañantes con casco a escala 2× y seguimiento por historial a 65/130 px, integrados en Tierra.
+- [x] Verificación en memoria y Edge headless: formación, giro, Idle, pausa F3/modal y subida del elevador con recuperación de fila al caminar.
+- [ ] Validación visual de giros cerrados, subida/bajada y pausa; comprobación de tipos/build pendiente de autorización.
+
 ### Fase 2 — Mapa y colisiones
 - [ ] Definir mapa pequeño con áreas funcionales.
 - [ ] Añadir paredes/obstáculos y colisiones.

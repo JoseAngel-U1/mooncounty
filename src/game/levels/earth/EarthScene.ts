@@ -3,6 +3,8 @@ import { ExplorationScene } from '../../scenes/ExplorationScene';
 import type { PlayerSpawn, WorldSize } from '../../scenes/ExplorationScene';
 import { EarthCollisionEditor } from './earthCollisionEditor';
 import { EARTH_COLLISION_RECTS } from './earthCollisions';
+import { EarthCrew } from './earthCrew';
+import { loadEarthCrewTextures } from './earthCrewSprites';
 import { EarthElevator } from './earthElevator';
 import { ProximityInteractionSystem } from '../../interactions/ProximityInteractionSystem';
 import {
@@ -42,6 +44,7 @@ export class EarthScene extends ExplorationScene {
   private collisionEditor?: EarthCollisionEditor;
   private interactions?: ProximityInteractionSystem;
   private elevator?: EarthElevator;
+  private crew?: EarthCrew;
   private missionState = createEarthMissionState();
   private playerAnimations?: EarthPlayerAnimationKeys;
   private npcAnimations?: EarthNpcAnimationKeys;
@@ -55,6 +58,7 @@ export class EarthScene extends ExplorationScene {
   preload() {
     this.load.image(MAP_KEY, MAP_PATH);
     loadEarthPlayerTextures(this);
+    loadEarthCrewTextures(this);
     loadEarthNpcTextures(this);
   }
 
@@ -62,6 +66,7 @@ export class EarthScene extends ExplorationScene {
     this.missionState = createEarthMissionState();
     this.playerAnimations = undefined;
     this.npcAnimations = undefined;
+    this.crew = undefined;
     this.facingLeft = false;
     this.launchPanelOpen = false;
 
@@ -91,28 +96,36 @@ export class EarthScene extends ExplorationScene {
       () => EARTH_COLLISION_RECTS,
       (horizontal, vertical) => this.updatePlayerAnimation(horizontal, vertical),
     );
+    this.crew = new EarthCrew(this, this.player);
   }
 
   override update() {
     this.collisionEditor?.update();
+    const editing = this.collisionEditor?.isEditing() ?? false;
 
     if (this.launchPanelOpen) {
       this.player.setVelocity(0, 0);
       this.updatePlayerAnimation(0, 0);
+      this.crew?.update(false);
       return;
     }
 
-    const riding = this.elevator?.update(!this.collisionEditor?.isEditing()) ?? false;
-    this.interactions?.update(!this.collisionEditor?.isEditing() && !riding);
+    const riding = this.elevator?.update(!editing) ?? false;
+    this.interactions?.update(!editing && !riding);
 
-    if (riding) return;
+    if (riding) {
+      this.crew?.update(!editing);
+      return;
+    }
 
-    if (this.collisionEditor?.isEditing()) {
+    if (editing || this.launchPanelOpen) {
       this.player.setVelocity(0, 0);
       this.updatePlayerAnimation(0, 0);
+      this.crew?.update(false);
       return;
     }
 
+    this.crew?.update(true);
     super.update();
   }
 
