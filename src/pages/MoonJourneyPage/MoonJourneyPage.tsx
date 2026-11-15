@@ -1,26 +1,12 @@
-import { useEffect, useRef } from 'react';
 import NavigationButton from '../../components/shared/NavigationButton/NavigationButton';
+import PhaserGame from '../../components/shared/PhaserGame/PhaserGame';
 import './MoonJourneyPage.css';
 
 export default function MoonJourneyPage() {
-  const headingRef = useRef<HTMLHeadingElement>(null);
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-  }, []);
-
   return (
-    <main className="moon-journey-page" aria-labelledby="moon-journey-title">
-      <div className="moon-journey-content">
-        <NavigationButton to="/levels">VOLVER A MAPAS</NavigationButton>
-        <section className="moon-journey-panel">
-          <p className="moon-journey-kicker">MOONCOUNTY · NIVEL 2</p>
-          <h1 id="moon-journey-title" ref={headingRef} tabIndex={-1}>Viaje a la Luna</h1>
-          <p className="moon-journey-description">
-            Plantilla base lista para implementar el trayecto hacia la Luna y el enfrentamiento contra los AVE.
-          </p>
-        </section>
-      </div>
+    <main className="moon-journey-view" aria-label="Viaje a la Luna — Interior de la nave">
+      <PhaserGame key="moon-journey-ship-interior" sceneKey="ship-interior" />
+      <NavigationButton className="moon-journey-back" to="/levels">VOLVER A MAPAS</NavigationButton>
     </main>
   );
 }

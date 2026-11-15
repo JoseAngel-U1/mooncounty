@@ -1,5 +1,44 @@
 # CHANGELOG
 
+## 2026-11-15 — Asientos transitables en el interior del nivel 2
+- En `src/game/levels/moonJourneyCollision.ts` se eliminan las tres franjas horizontales inferiores de los asientos (las que cerraban la forma de L) y se recorta cada respaldo a su mitad superior: y ≤ 180 px (asiento alto), y ≤ 250 px (medio) e y ≤ 320 px (bajo). El resto del mapa no cambia.
+- Cada asiento conserva una sola pieza recta y recortada. Con el cuerpo de 22 × 28 se puede caminar sobre los cojines, entrar en el hueco detrás del asiento medio desde arriba y llegar a la puerta de salida inferior izquierda junto al círculo; los respaldos altos siguen bloqueando.
+- El mapa pasa de 29 polígonos + 2 círculos a 26 polígonos + 2 círculos; `ShipInteriorScene` genera 231 rectángulos + 2 círculos = 233 cuerpos (antes 247).
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-29) y `docs/WORK_STATUS.md`. Simulación a 1 px con el cuerpo real: todos los destinos de prueba alcanzables. Verificación en navegador y build pendientes; no se ejecutó compilación.
+
+## 2026-11-15 — Colisiones del interior del nivel 2
+- Creado `src/game/levels/moonJourneyCollision.ts` como fuente única de verdad de la geometría: transcripción tipada de `physics-body (4).json` (29 polígonos y 2 círculos en coordenadas del mapa 900 × 500), más tamaño del mapa y punto de aparición.
+- `ShipInteriorScene` genera los obstáculos desde ese módulo: rectángulos exactos para las cajas alineadas, `setCircle` para los círculos y franjas horizontales de 4 px calculadas sobre los bordes reales de los polígonos inclinados (247 cuerpos: 245 rectángulos + 2 círculos).
+- El cuerpo del jugador pasa de 32 × 40 a 22 × 28 para cruzar la puerta de 44 px entre la sala lunar y la sala de mando, y el astronauta aparece en (330, 250), zona libre lejos del mobiliario.
+- El overlay de colisiones queda desactivado tras la constante `DEBUG_COLLISIONS`. La escena no duplica el JSON ni crea sprites con textura vacía: los obstáculos son cuerpos estáticos puros.
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-27) y `docs/WORK_STATUS.md`. `npm run build` correcto (2026-11-15, autorizado): `tsc -b` sin errores, 74 módulos transformados, JS 1.492,72 kB (422.34 kB gzip) y CSS 6.66 kB, con el aviso no bloqueante de tamaño del bundle. Eliminado `physics-body (4).json` de la raíz del repo tras transcribir sus datos. La reconexión de la esclusa con `ExteriorScene` sigue pendiente de definir las zonas interactivas sobre el arte final. Validación visual e interactiva pendiente en navegador.
+
+## 2026-11-15 — Fondo pixel art en la vista interior del nivel 2
+- Copiada `Mission_2_Exterior_900x500.png` a `public/assets/mission-2-interior-bg.png` (900 × 500) para servirla desde Vite.
+- `ShipInteriorScene` carga la imagen en `preload` y la dibuja a escala 1:1; el mundo pasa a 900 × 500 con límites físicos y de cámara del mismo tamaño.
+- La cámara ajusta su zoom con `max(ancho/900, alto/500)` para cubrir la pantalla sin deformar la imagen, conservando seguimiento, `roundPixels` y limpieza del listener `RESIZE` en `SHUTDOWN`.
+- Retiradas las zonas de ventana, traje EVA y esclusa, y la transición automática a `ExteriorScene`; el movimiento WASD/flechas con velocidad normalizada se mantiene. `ExteriorScene` sigue registrada pero sin acceso.
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-26 revisa D-25) y `docs/WORK_STATUS.md`. `npm run build` correcto (2026-11-15) con aviso no bloqueante de tamaño del bundle; validación visual pendiente en navegador.
+
+## 2026-11-14 — Escena interior separada y transición a la EVA
+- Creada `src/game/scenes/ShipInteriorScene.ts` (clave `'ship-interior'`) como entrada del nivel 2: cápsula inicial, ventana informativa, zona de traje EVA con F y esclusa bloqueada sin traje. Conserva las mecánicas de movimiento, cámara y foco de `ExplorationScene`.
+- `ExteriorScene` queda solo para la vista espacial: recibe `{ tethered }` desde la esclusa, se añade al juego sin arrancar desde `ShipInteriorScene` y se inicia con `scene.start` al cruzar la esclusa. Sin cable arranca en estado varado.
+- Registradas `'ship-interior'` y `'exterior-scene'` en `sceneRegistry.ts`; `MoonJourneyPage` monta `PhaserGame` con `sceneKey="ship-interior"`.
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-25 amplía D-24) y `docs/WORK_STATUS.md`. Build no ejecutado para este cambio (pendiente de autorización explícita); validación visual y de transición EVA pendiente en navegador.
+
+## 2026-11-14 — Integración de la escena exterior del nivel 2
+- Trasladada la escena del usuario `src/pages/Nivel2/VistaExterior.tsx` a `src/game/scenes/ExteriorScene.ts` con clase `ExteriorScene` y clave `'exterior-scene'`, conforme a la organización de AGENTS.md (escenas en `game/scenes`, nunca en `pages`).
+- Registrada `'exterior-scene': ExteriorScene` en `sceneRegistry.ts` y retirada la escena provisional `ShipInteriorScene`. `MoonJourneyPage` monta ahora `PhaserGame` con `sceneKey="exterior-scene"`.
+- Eliminada la ruta suelta `/nivel-2` de `AppRouter.tsx` (importaba por defecto un módulo sin export default y rompía el grafo de módulos de toda la app). Restaurada la tarjeta `moon` como bloqueada con `sceneKey: null`, ya que `sceneKey` admite solo claves de `SceneKey` y los niveles bloqueados no montan motor.
+- Conservada la lógica del usuario: vista interior con zona de ventana, traje EVA con F y esclusa; transición a vista exterior de 3000 × 3000, cable de seguridad de 220 px y estado varado sin cable. Añadida guarda de textura y recolocación del HUD en `RESIZE`.
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-24 sustituye D-23) y `docs/WORK_STATUS.md`. `npm run build` correcto (2026-11-14) con aviso no bloqueante de tamaño del bundle; validación visual y de transición EVA pendiente en navegador.
+
+## 2026-11-14 — Escena interior de la nave para Viaje a la Luna
+- Creada `src/game/scenes/ShipInteriorScene.ts` (clave `'ship-interior'`) como primer escenario dentro de la nave para el nivel 2, replicando las mecánicas de `ExplorationScene` (astronauta placeholder, movimiento WASD/flechas, velocidad normalizada de 220, colisión con los bordes de la nave, cámara de seguimiento con zoom 1.5, redimensionado y limpieza en `SHUTDOWN`).
+- Registrada `'ship-interior': ShipInteriorScene` en `src/game/scenes/sceneRegistry.ts`.
+- Actualizadas `src/pages/MoonJourneyPage/MoonJourneyPage.tsx` y `MoonJourneyPage.css` para montar `PhaserGame` con `sceneKey="ship-interior"` a ventana completa y mantener el botón `VOLVER A MAPAS`.
+- Actualizados `src/game/README.md`, `docs/DECISIONS.md` (D-23) y `docs/WORK_STATUS.md`. Build no ejecutado (pendiente de autorización explícita); validación visual y de controles pendiente en navegador.
+
 ## 2026-11-14 — Tarjeta y plantilla base para Viaje a la Luna
 - Ampliado `LevelDefinition` en `src/game/levels/levels.ts` con `kind: 'phaser'` y `kind: 'page'` para admitir enlaces a páginas React propias sin romper los niveles Phaser.
 - Añadida la entrada `moon-journey` («Viaje a la Luna», `/assets/moon.svg`) reutilizando `LevelCard` y `LevelSelectScreen`, manteniendo `Tierra` y `Luna` (bloqueada).

@@ -1,6 +1,9 @@
 # Módulo Phaser
 - `scenes/ExplorationScene.ts`: escena provisional de Fase 1 con mundo delimitado, astronauta, WASD/flechas y cámara. Sin cambios de lógica durante la refactorización arquitectónica.
+- `scenes/ShipInteriorScene.ts`: escena de entrada del nivel 2 («Viaje a la Luna»). Usa `public/assets/mission-2-interior-bg.png` (900 × 500) como fondo a escala 1:1, con mundo del mismo tamaño, cámara de seguimiento cuyo zoom cubre la pantalla sin deformar la imagen y movimiento WASD/flechas con velocidad normalizada. Crea un cuerpo estático por rectángulo y por círculo del mapa de colisión, con el jugador (cuerpo 22 × 28) en (330, 250). El overlay de colisiones se activa con la constante `DEBUG_COLLISIONS`. Sin zonas interactivas por ahora: ventana, traje EVA y esclusa se definirán sobre el arte final.
+- `scenes/ExteriorScene.ts`: vista exterior de la EVA, mundo de 3000 × 3000 con la nave anclada, cable de seguridad de 220 px y estado varado si se sale sin cable. Recibe `{ tethered }`; queda registrada pero sin acceso desde la interior hasta definir la esclusa.
 - `scenes/sceneRegistry.ts`: claves y constructores de escenas implementadas.
+- `levels/moonJourneyCollision.ts`: geometría de colisión del interior (26 polígonos y 2 círculos, coordenadas del mapa 900 × 500) basada en el export `physics-body (4).json`; los tres asientos conservan solo una pieza recortada de su respaldo alto (sin forma de L), de modo que el cojín, el hueco tras el asiento medio y la salida inferior izquierda son accesibles. Incluye tamaño del mapa y punto de aparición.
 - `levels/levels.ts`: registro tipado de niveles y resolución de identificadores; admite niveles Phaser (`kind: 'phaser'`) o páginas React (`kind: 'page'`), y los bloqueados no tienen escena ficticia.
 - `createGame.ts`: configuración y creación del motor Phaser, sin dependencia de React.
 
