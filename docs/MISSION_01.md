@@ -11,6 +11,14 @@ Completar preparativos de una nave mediante exploración, recolección, interacc
 - Paredes y obstáculos sólidos no se atraviesan (fase de mapa).
 
 ## Flujo de misión
+### Ampliación autorizada: traje espacial (2026-11-15)
+- Al comenzar una sesión de Tierra, `hasSpacesuit = false`; el sprite provisional no cambia.
+- En la zona de los cuatro trajes aparece «Presiona E para recoger traje» al estar dentro del radio.
+- La primera E establece `hasSpacesuit = true` y muestra «Traje espacial equipado». Las siguientes muestran «Ya tienes un traje espacial» sin otra recogida.
+- En este paso el estado se mantiene únicamente en memoria de la escena; el inventario inferior descrito anteriormente queda pendiente de implementación. Al crear una nueva sesión se restablece a false.
+- Esta ampliación no añade requisitos de traje a las comprobaciones de despegue ni implementa otras etapas.
+
+### Flujo general documentado
 1. Buscar y recoger documento «Coordenada X».
 2. Buscar y recoger documento «Coordenada Y».
 3. Acercarse al ingeniero y pulsar E para entregar ambos documentos y recibir un código de cuatro dígitos.

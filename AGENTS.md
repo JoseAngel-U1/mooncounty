@@ -42,6 +42,7 @@ Si hay conflicto, detenerse y preguntar antes de modificar una decisión confirm
 - No crear animaciones de despegue, explosión ni fallo: mostrar modal inmediato.
 - No presentar como hechos científicos afirmaciones no verificadas; el contenido educativo debe ser prudente.
 - Mantener interacción accesible por teclado: WASD/flechas, E para interactuar.
+- Las herramientas de depuración son exclusivamente para desarrollo y no deben estar disponibles en producción, especialmente el editor de colisiones F3 de Tierra. Antes de entregar el proyecto, comprobar en la versión de producción que F3 no activa el editor y que su panel, botones, atajos y controles de edición no están disponibles. No basta con que el editor esté oculto o apagado inicialmente. Mantenerlo disponible durante el desarrollo; su deshabilitación o exclusión para producción queda como tarea de preparación para la entrega.
 - Queda prohibido ejecutar `npm run build`, `vite build`, `tsc --build` o cualquier comando equivalente de compilación o generación de artefactos de producción sin autorización explícita del usuario.
 - No ejecutar comandos de compilación automáticamente al terminar tareas o fases. Se permite trabajar con el servidor de desarrollo existente y revisar el código.
 - Cuando el usuario autorice explícitamente una compilación, documentar sus resultados; en caso contrario, registrar la verificación como pendiente de autorización.

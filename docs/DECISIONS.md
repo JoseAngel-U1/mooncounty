@@ -26,6 +26,18 @@
 ## Clasificación de componentes — ampliación de D-20
 - **D-21 (2026-11-14, aprobada por el usuario):** separar los componentes existentes en `ui/` (interfaz específica de MoonCounty) y `shared/` (genéricos o compartidos entre páginas y funcionalidades), cada uno con carpeta y TSX/CSS propios. Mantener las responsabilidades de páginas, layouts, router y motor, sin cambios visuales o funcionales ni avance de fase.
 
+## Spawn por nivel
+- **D-22 (2026-11-15, aprobada por el usuario):** spawn independiente para Tierra mediante `getPlayerSpawn()` sobrescribible, en píxeles del mundo original. La implementación base conserva el centro del mundo para los demás niveles. Las coordenadas iniciales de Tierra mantienen la posición anterior hasta que el usuario las ajuste.
+
+## Herramientas de desarrollo y producción
+- **D-23 (2026-11-15, aprobada por el usuario):** las herramientas de depuración, especialmente el editor de colisiones F3 de Tierra, no deben estar disponibles en producción. Antes de entregar se comprobará que F3 no lo activa y que sus controles no están disponibles. Se mantiene el editor durante el desarrollo; su exclusión o deshabilitación para producción queda pendiente en WORK_STATUS, sin implementar cambios de lógica ni autorizar compilaciones en esta tarea.
+
+## Interacción básica autorizada
+- **D-24 (2026-11-15, aprobada por el usuario):** Tierra dispone de interacción por proximidad/E sobre el objeto más cercano, con ID, X/Y del mapa original, radio y acción configurables. Primer objeto de prueba en los cuatro trajes con mensaje temporal «Interacción detectada». Sistema reutilizable sin activar otros niveles ni interferir con F3. Inventario, NPC, diálogos y progresión de misión quedan fuera de este paso.
+
+## Recogida de traje autorizada
+- **D-25 (2026-11-15, aprobada por el usuario):** sustituir la prueba de D-24 por la recogida única de un traje en Tierra. Estado `hasSpacesuit` inicialmente false por sesión, true tras la primera E; mensajes «Traje espacial equipado» y «Ya tienes un traje espacial» en repeticiones. Aviso específico «Presiona E para recoger traje». Estado en memoria, sin inventario completo ni cambio de sprite y sin alterar las reglas de despegue. Ampliación registrada en MISSION_01.
+
 ## Por concretar antes de implementarlo
 - Diseño visual y distribución exacta del mapa.
 - Contenido preciso del código de 4 dígitos: fijo, generado por partida o asignado por ingeniero.

@@ -1,5 +1,41 @@
 # CHANGELOG
 
+## 2026-11-15 — Recogida única de traje espacial en Tierra
+- Sustituida la acción de prueba por recogida funcional: aviso «Presiona E para recoger traje», primera recogida «Traje espacial equipado» y repeticiones «Ya tienes un traje espacial».
+- Estado único `EarthScene.missionState.hasSpacesuit`, inicialmente false y restablecido al crear la escena. `earthMissionState.ts` define su tipo y fábrica; `earthInteractions.ts` conserva coordenadas y radio y recibe la referencia al estado de la sesión.
+- Añadido `prompt` opcional al contrato reutilizable, conservando el texto predeterminado para los demás objetos. Sprite, F3, colisiones y movimiento conservados.
+- Ampliación del traje documentada en MISSION_01 y D-25; inventario completo y demás etapas pendientes. Pruebas en memoria correctas para inicio, primera recogida, repetición y nueva sesión. Prueba visual pendiente; sin build ni tsc.
+
+## 2026-11-15 — Interacción por proximidad y tecla E en Tierra
+- Añadidos contrato de objetos interactivos y selector del más próximo en `src/game/interactions/`, con sistema Phaser reutilizable instanciado únicamente por EarthScene.
+- Configuración de Tierra en `earthInteractions.ts`: ID, posición original X/Y, radio y acción. Prueba en los cuatro trajes `(470, 945)`, radio 100, con mensaje «Interacción detectada» durante 1,5 segundos.
+- Indicador de proximidad «Presiona E para interactuar» y una acción por pulsación. Interacciones suspendidas sin foco o mientras F3 está activo; retirada de la tecla y textos al cerrar la escena.
+- Pruebas en memoria del selector correctas para proximidad, borde del radio, salida, empate y lista vacía. Prueba visual pendiente. Sin build ni comandos equivalentes; sin inventario, NPC, diálogos ni progresión.
+
+## 2026-11-15 — Pendiente de exclusión del editor F3 en producción
+- Registradas en WORK_STATUS la tarea de deshabilitar o excluir completamente el editor F3 de producción y la comprobación previa a la entrega de que F3 y sus controles no están disponibles.
+- Añadida la regla de herramientas de depuración exclusivas de desarrollo en AGENTS.md y registrada la decisión D-23.
+- Cambio únicamente documental: el editor sigue disponible durante el desarrollo. No se modificó la lógica del juego ni se ejecutaron comandos de compilación.
+
+## 2026-11-15 — Spawn configurable por nivel
+- Añadido `getPlayerSpawn()` sobrescribible en ExplorationScene, con el centro del mundo como valor por defecto.
+- Tierra usa `EARTH_PLAYER_SPAWN` en EarthScene.ts: X=725.5, Y=542 en píxeles originales del mapa, independientes del zoom y la cámara.
+- El spawn solo se consulta al crear al astronauta; se conserva el ajuste existente a los límites al redimensionar. Revisión de código realizada; prueba visual y build pendientes, sin ejecutar compilación.
+
+## 2026-11-14 — Overlay de depuración de colisiones con F3
+- Añadido un overlay de depuración exclusivo de Tierra que F3 activa y desactiva en ejecución; empieza desactivado.
+- Dibuja los cuerpos reales de Arcade en coordenadas del mundo: relleno rojo semitransparente y borde rojo para cada obstáculo estático, y relleno/borde verde para el cuerpo dinámico del astronauta.
+- Las figuras siguen el desplazamiento y el zoom de la cámara y se actualizan con el movimiento del astronauta. Etiquetas con el identificador de cada obstáculo, desactivables con `SHOW_DEBUG_LABELS`.
+- No cambia colisiones, velocidades ni controles. `DEBUG_COLLISIONS` queda como estado inicial del overlay.
+- Verificación con capturas headless a 1280 × 720 y 1920 × 1080: bordes rojos visibles y rectángulo verde del cuerpo escalado con el zoom; sin overlay con el estado inicial desactivado. No se ejecutó build ni `tsc`.
+
+## 2026-11-14 — Colisiones del escenario de Tierra
+- Añadido `src/game/levels/earth/earthCollisions.ts` con los rectángulos de colisión en coordenadas del mundo y etiqueta por estructura: muros perimetrales, hangar y edificios, módulos, torres, contenedores de combustible y estructuras del sur.
+- EarthScene crea una zona estática invisible por rectángulo y un collider con el astronauta. El punto inicial y la rejilla de suelo de 52 × 52 px permanecen transitables; no se bloquean pasillos ni accesos.
+- Añadida la constante `DEBUG_COLLISIONS` (desactivada) como estado inicial del overlay de depuración.
+- ExplorationScene expone `player` como `protected` para permitir el collider sin duplicar la creación del personaje. Sin cambios de movimiento, cámara, mapa ni otros niveles.
+- Sin NPC, objetos interactivos, misiones ni inventario. Verificación estática y HTTP 200 de los módulos en el servidor existente; no se ejecutó build ni equivalente. Ajuste fino de coordenadas y prueba interactiva pendientes.
+
 ## 2026-11-14 — Corrección de franjas vacías en Tierra
 - Diagnóstico: con el viewport más ancho que el mapa (1451 px), Phaser mantenía `scrollX = 0` y el resto del canvas mostraba el fondo del juego.
 - ExplorationScene expone `getCameraZoom` (1 por defecto); EarthScene lo sobrescribe con `max(1, viewport/anchoMapa, altoMapa)` para cubrir el viewport con escala uniforme, sin deformar el PNG.

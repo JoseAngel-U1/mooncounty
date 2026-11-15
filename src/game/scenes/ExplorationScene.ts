@@ -5,10 +5,11 @@ const SPEED = 220;
 type MovementKeys = Record<'up' | 'down' | 'left' | 'right' | 'w' | 'a' | 's' | 'd', Phaser.Input.Keyboard.Key>;
 
 export type WorldSize = { width: number; height: number };
+export type PlayerSpawn = { x: number; y: number };
 
 // Escena base reutilizable: recibe la clave de la escena específica del nivel.
 export class ExplorationScene extends Phaser.Scene {
-  private player!: Phaser.Physics.Arcade.Sprite;
+  protected player!: Phaser.Physics.Arcade.Sprite;
   private keys?: MovementKeys;
   private ground!: Phaser.GameObjects.Graphics;
 
@@ -34,8 +35,8 @@ export class ExplorationScene extends Phaser.Scene {
     astronaut.generateTexture('astronaut-placeholder', 32, 40);
     astronaut.destroy();
 
-    const world = this.getWorldSize(this.scale.gameSize);
-    this.player = this.physics.add.sprite(world.width / 2, world.height / 2, 'astronaut-placeholder');
+    const spawn = this.getPlayerSpawn();
+    this.player = this.physics.add.sprite(spawn.x, spawn.y, 'astronaut-placeholder');
     this.player.setCollideWorldBounds(true);
     // El cuerpo cubre toda la textura para que ninguna parte salga del canvas.
     this.player.body?.setSize(this.player.width, this.player.height);
@@ -56,6 +57,11 @@ export class ExplorationScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.scale.off(Phaser.Scale.Events.RESIZE, this.resizeWorld, this);
     });
+  }
+
+  protected getPlayerSpawn(): PlayerSpawn {
+    const world = this.getWorldSize(this.scale.gameSize);
+    return { x: world.width / 2, y: world.height / 2 };
   }
 
   // Los niveles pueden sustituir el tamaño del mundo sin alterar el movimiento.
