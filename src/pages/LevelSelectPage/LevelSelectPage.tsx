@@ -7,7 +7,11 @@ export default function LevelSelectPage() {
 
   return (
     <div className="level-select-page">
-      <LevelSelectScreen onSelect={(level) => navigate(`/game/${encodeURIComponent(level.id)}`)} />
+      <LevelSelectScreen
+        onSelect={(level) =>
+          navigate(level.kind === 'page' ? level.path : `/game/${encodeURIComponent(level.id)}`)
+        }
+      />
     </div>
   );
 }

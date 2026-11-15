@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-11-14 — Tarjeta y plantilla base para Viaje a la Luna
+- Ampliado `LevelDefinition` en `src/game/levels/levels.ts` con `kind: 'phaser'` y `kind: 'page'` para admitir enlaces a páginas React propias sin romper los niveles Phaser.
+- Añadida la entrada `moon-journey` («Viaje a la Luna», `/assets/moon.svg`) reutilizando `LevelCard` y `LevelSelectScreen`, manteniendo `Tierra` y `Luna` (bloqueada).
+- Creada `src/pages/MoonJourneyPage/MoonJourneyPage.tsx` y `MoonJourneyPage.css` como plantilla mínima con retorno a `/levels`, y registrada la ruta `/moon-journey` en `src/router/AppRouter.tsx`.
+- Actualizados `LevelSelectPage.tsx` para navegar a `level.path` en niveles de tipo `page` y `GamePage.tsx` para redirigir `/game/moon-journey` hacia `/moon-journey` sin montar Phaser.
+- Registrada decisión D-22 en `docs/DECISIONS.md` y actualizados `AGENTS.md`, `src/game/README.md` y `docs/WORK_STATUS.md`. Build no ejecutado (pendiente de autorización explícita); validación visual en navegador pendiente.
+
 ## 2026-11-14 — Declaraciones Vite para importaciones CSS
 - Movido vite-env.d.ts de la raíz a src/vite-env.d.ts: tsconfig.app.json incluye únicamente src y dejaba fuera la declaración anterior.
 - Conservada la referencia a vite/client, que incluye declaraciones para '*.css'. Importaciones CSS normales y opciones estrictas de TypeScript sin cambios.

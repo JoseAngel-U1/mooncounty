@@ -25,6 +25,7 @@
 
 ## Clasificación de componentes — ampliación de D-20
 - **D-21 (2026-11-14, aprobada por el usuario):** separar los componentes existentes en `ui/` (interfaz específica de MoonCounty) y `shared/` (genéricos o compartidos entre páginas y funcionalidades), cada uno con carpeta y TSX/CSS propios. Mantener las responsabilidades de páginas, layouts, router y motor, sin cambios visuales o funcionales ni avance de fase.
+- **D-22 (2026-11-14, aprobada por el usuario):** añadir en `src/game/levels/levels.ts` una tercera tarjeta reutilizando `LevelCard` para el nivel 2 «Viaje a la Luna» (enfrentamiento contra los AVE), conservando `Tierra` y `Luna` (bloqueada) e imagen `/assets/moon.svg` provisional. El enlace apunta a la ruta propia `/moon-journey` en `AppRouter.tsx` con la plantilla mínima `MoonJourneyPage` en `src/pages/MoonJourneyPage/` para que el usuario implemente allí ese nivel.
 
 ## Por concretar antes de implementarlo
 - Diseño visual y distribución exacta del mapa.

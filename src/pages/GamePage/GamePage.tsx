@@ -12,6 +12,7 @@ export default function GamePage() {
   // Validar antes de montar Phaser, también en accesos directos a la URL.
   if (!level) return <NotFoundPage />;
   if (level.status === 'locked') return <Navigate to="/levels" replace />;
+  if (level.kind === 'page') return <Navigate to={level.path} replace />;
 
   return (
     <main className="game-view">

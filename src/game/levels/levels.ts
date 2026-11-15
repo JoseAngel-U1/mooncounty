@@ -7,7 +7,8 @@ type LevelDetails = {
 };
 
 type LevelDefinition = LevelDetails & (
-  | { readonly status: 'available'; readonly sceneKey: SceneKey }
+  | { readonly status: 'available'; readonly kind: 'phaser'; readonly sceneKey: SceneKey }
+  | { readonly status: 'available'; readonly kind: 'page'; readonly path: string }
   | { readonly status: 'locked'; readonly sceneKey: null }
 );
 
@@ -22,7 +23,16 @@ const levelRegistry: Readonly<Record<string, LevelDefinition>> = {
     description: 'Tu punto de partida. Explora el escenario provisional y familiarízate con los controles.',
     image: '/assets/earth.svg',
     status: 'available',
+    kind: 'phaser',
     sceneKey: 'exploration',
+  },
+  'moon-journey': {
+    title: 'Viaje a la Luna',
+    description: 'Segundo nivel. Enfréntate a los AVE durante el trayecto hacia la Luna.',
+    image: '/assets/moon.svg',
+    status: 'available',
+    kind: 'page',
+    path: '/moon-journey',
   },
   moon: {
     title: 'Luna',
